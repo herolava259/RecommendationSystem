@@ -8,4 +8,6 @@ class Comment(BaseModel):
     created_date: date = Field(default_factory=datetime.datetime.now)
     updated_date: date = Field(default_factory=datetime.datetime.now)
     content: str = Field(default = "")
+    feed_id: UUID = Field(default_factory=uuid4)
+
 
