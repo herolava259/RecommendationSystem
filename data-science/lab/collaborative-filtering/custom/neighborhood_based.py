@@ -64,7 +64,7 @@ class NeighborhoodBasedCFRecommender(BaseEstimator):
         self.refresh()
 
 
-    def __pred(self, u, i, normalized: bool = True):
+    def __predict(self, u, i, normalized: bool = True):
 
         ids = np.where(self.X_data[:, 1] == i)[0].astype(np.int32)
 
@@ -94,7 +94,7 @@ class NeighborhoodBasedCFRecommender(BaseEstimator):
 
         for i in range(self.n_item):
             if i not in items_rated_by_u:
-                rating  = self.__pred(u, i)
+                rating  = self.__predict(u, i)
                 if rating > 0:
                     recommended_items.append(i)
 

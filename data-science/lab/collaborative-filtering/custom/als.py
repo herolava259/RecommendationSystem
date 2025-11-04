@@ -76,12 +76,12 @@ class AlternativeLeastSquareTrainer:
 
                 reg_diag = self._lambda * np.diag(np.zeros((len_u, len_u)))
 
-                self.i_latent[i] = np.linalg.inv(u_latent.T @ i_latent + reg_diag) @ np.dot(u_latent.T, r)
+                self.i_latent[i] = np.linalg.inv(u_latent.T @ u_latent + reg_diag) @ np.dot(u_latent.T, r)
 
             l = self.loss(ratings)
 
             if (loop + 1) % self.log_circle:
-                print(f"Loop: {loop} - Error(loss): {l}")
+                print(f"Loop: {loop + 1} - Error(loss): {l}")
 
             if l < self.accepted_err:
                 break
