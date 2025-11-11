@@ -10,7 +10,7 @@ from pydantic_core.core_schema import FieldValidationInfo
 import re
 from datetime import datetime, timedelta
 from uuid import UUID
-
+from typing import Dict
 
 class CreateAccountRequest(BaseModel):
     email: str
@@ -87,22 +87,32 @@ class NewAccessTokenResponse(BaseModel):
     access_token: str = Field(max_length=1024)
 
 
-class AccountModel(BaseModel):
-    email: str
+class AccountPrivateInformationModel(BaseModel):
+    id: UUID = Field(default=uuid.uuid4)
+    account_id: UUID = Field(default=uuid.uuid4)
     phone: str = Field(max_length=64)
-    user_name: str = Field(max_length=64)
-    nick_name: str = Field(max_length=512)
-    image_url: str = Field(max_length=1024)
-    preference: str = Field(max_length=1024)
+    special_name: str = Field(max_length=512)
     address: str = Field(max_length=1024)
     post_code: str = Field(max_length=64)
+    user_name: str = Field(max_length=64)
+    preference: str = Field(max_length=1024)
+    updated_at: datetime = Field(default_factory=datetime.now)
+    secret_qas: Dict[str, str] = Field(default_factory=dict)
+    secret_key: str = Field(max_length=1024)
+
+class AccountModel(BaseModel):
+    id: UUID = Field(default=uuid.uuid4)
+    email: str
+    image_url: str = Field(max_length=1024)
     signin_name: str = Field(max_length=64)
-    salt: str = Field(max_length=64)
+    is_verified: bool = Field(default=False)
     active: bool = Field(default=False)
     pwd_hash: str = Field(max_length=1024)
     personal_identifier: str = Field(max_length=2048)
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
+    private_information: Optional[AccountPrivateInformationModel] = Field(default_factory=AccountPrivateInformationModel)
+
 
 class LogoutRequest(BaseModel):
     access_token: str = Field(default = "")
