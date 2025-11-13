@@ -138,18 +138,26 @@ class CompositeAccessActionModel(BaseModel):
     pass
 
 class RoleDefaultModel(RoleModel):
-    ## default role of resource
+    ## default role of resource when a resource is created
     ## include owner, reader, writer
     pass
 
 
-class ResourcePermission(BaseModel):
+class ResourcePermissionModel(BaseModel):
     resource_id: uuid.UUID
     ## traditional access type: create, update, delete, read
 
     ## composite access type: include traditional access type and expire time of the permission or owner
     # evict the permission, is combination of the traditional access action
 
+class ResourcePolicyModel(BaseModel):
+    resource_id: uuid.UUID
+
+class ResourceStaticModel(ResourceModel):
+    """Include files, information is persistent"""
+
+class ResourceDynamicModel(ResourceModel):
+    """"computation resource"""
 
 
 
