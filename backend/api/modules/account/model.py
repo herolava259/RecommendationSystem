@@ -47,7 +47,7 @@ class LoginRequest(BaseModel):
     check_sum: str = Field(max_length=256)
 
     @field_validator("password")
-    def validate_password(cls, value):
+    def validate_password(self, value):
         pass
     @model_validator(mode="after")
     def validate_request(self):
