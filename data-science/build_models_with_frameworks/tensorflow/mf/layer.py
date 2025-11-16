@@ -268,7 +268,7 @@ class FineGrainedMFModel(Module):
         ds_train = tf.data.Dataset.from_tensor_slices((x_train, y_train))
         for epoch in range(num_epochs):
             epoch_losses = []
-            ds_batched = x_train.shuffle(buffer_size=batch_size << 3).batch(batch_size).cache().prefetch(tf.data.AUTOTUNE)
+            ds_batched = ds_train.shuffle(buffer_size=batch_size << 3).batch(batch_size).cache().prefetch(tf.data.AUTOTUNE)
             for i, x_y in enumerate(ds_batched):
                 x_batch, y_batch = x_y
                 with tf.GradientTape(persistent=True) as tape:
@@ -289,4 +289,4 @@ class FineGrainedMFModel(Module):
             losses.write(epoch, tf.constant(epoch_losses))
             print(f"----------------------------------End| |Epoch={epoch}| |End----------------------------")
 
-         return losses
+        return losses
