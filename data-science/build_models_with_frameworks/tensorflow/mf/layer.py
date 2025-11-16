@@ -68,7 +68,7 @@ class RecLatentFeatureLayer(RecLayer):
         self.embed_vars = [tf.Variable(w_init(shape=(self.embedding_dim, )), dtype=tf.float32, trainable=True)
                            for _ in range(self.n_space)]
 
-        self.bias = [tf.Variable(b_init(shape=(None,), dtype=tf.float32, trainable=True) for i in range(self.n_space)]
+        self.bias = [tf.Variable(b_init(shape=(None,)), dtype=tf.float32, trainable=True) for i in range(self.n_space)]
 
         self.embed_oov = tf.constant(w_init(shape=(self.embedding_dim,)), dtype=tf.float32 )
         self.bias_oov = tf.constant(w_init(shape=(1,)), dtype=tf.float32)
