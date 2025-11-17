@@ -30,10 +30,10 @@ class TokenBearer(HTTPBearer):
 
     async def __call__(self, request: Request) -> HTTPAuthorizationCredentials | None:
 
-        def _token_valid(token: str):
-            token_data = AccountUtils.decode_token(token)
+        def _token_valid(token_data: str):
+            token_info = AccountUtils.decode_token(token_data)
 
-            return token_data is not None
+            return token_info is not None
         creds = await super().__call__(request)
 
         token = creds.credentials

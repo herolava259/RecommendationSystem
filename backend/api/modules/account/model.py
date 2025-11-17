@@ -101,7 +101,7 @@ class AccountPrivateInformationModel(BaseModel):
     secret_key: str = Field(max_length=1024)
 
 class AccountModel(BaseModel):
-    id: UUID = Field(default=uuid.uuid4)
+    id: UUID = Field(default_factory=uuid.uuid4)
     email: str
     image_url: str = Field(max_length=1024)
     signin_name: str = Field(max_length=64)
