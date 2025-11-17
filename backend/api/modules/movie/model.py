@@ -49,6 +49,9 @@ class MovieDetailModel(BaseModel):
     original_language: str = Field(default="")
     original_title: str = Field(default="")
     spoken_languages: Dict[str, Any] = Field(default_factory=dict)
+    network: str = Field(default="")
+    director: str = Field(default="")
+    writer: str = Field(default="")
 
 class MovieGalleryModel(BaseModel):
     id: UUID = Field(default_factory=uuid.uuid4)
@@ -71,6 +74,7 @@ class GenreModel(BaseModel):
 class MovieMetadataModel(BaseModel):
     id: UUID = Field(default_factory=uuid.uuid4)
     movie_id: UUID = Field(default_factory=uuid.uuid4)
+    resource_url: str = Field(default=None)
 
 
 
@@ -118,12 +122,32 @@ class MovieCharacterModel(PeopleModel):
     movie_id: UUID = Field(default_factory=uuid.uuid4)
     actor_id: UUID = Field(default_factory=uuid.uuid4)
 
-#II. organization
-class ProductionCompanyModel(BaseModel):
-    id: UUID = Field(default_factory=uuid.uuid4)
+class MovieWriterModel(PeopleModel):
+	pass
 
-class StudioModel(ProductionCompanyModel):
-    pass
+
+#II. organization
+
+class OrganizationModel(BaseModel):
+	id: UUID = Field(default_factory=uuid.uuid4)
+
+class ProductionCompanyModel(OrganizationModel):
+    name: Optional[str] = Field(default= "Action")
+    country: Optional[str] = Field(default= "US")
+
+class StudioModel(OrganizationModel):
+    name: Optional[str] = Field(default= "Action")
+    country: Optional[str] = Field(default= "US")
+
+class MovieProductionRelationshipModel(RelationshipModel):
+	"""Many-to-many relationship."""
+	movie_id: UUID = Field(default_factory=uuid.uuid4)
+	production_company_id: UUID = Field(default_factory=uuid.uuid4)
+
+class MovieStudioRelationshipModel(RelationshipModel):
+	"""Many-to-many relationship."""
+	movie_id: UUID = Field(default_factory=uuid.uuid4)
+	studio_id: UUID = Field(default_factory=uuid.uuid4)
 
 
 #IV. reviews, rating, voting, like/dislike, comments => movie-oriented
