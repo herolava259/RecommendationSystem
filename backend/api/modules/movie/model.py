@@ -154,19 +154,27 @@ class MovieStudioRelationshipModel(RelationshipModel):
 
 class MovieInteractionModel(BaseModel):
     id: UUID = Field(default_factory=uuid.uuid4)
+    created_at: datetime = Field(default_factory=datetime)
+    updated_at: datetime = Field(default_factory=datetime)
     movie_id: UUID = Field(default_factory=uuid.uuid4)
     user_id: UUID = Field(default_factory=uuid.uuid4)
 
 class MovieReviewModel(MovieInteractionModel):
-    pass
+    review_text: str = Field(default_factory=str)
+    created_at: datetime = Field(default_factory=datetime)
+    updated_at: datetime = Field(default_factory=datetime)
+    rating: int = Field(default = 0)
 
 class MovieCommentModel(MovieInteractionModel):
-    pass
+    content: str = Field(default_factory=str)
+    created_at: datetime = Field(default_factory=datetime)
+    updated_at: datetime = Field(default_factory=datetime)
 
 class CommentVotingModel(BaseModel):
     id: UUID = Field(default_factory=uuid.uuid4)
     comment_id: UUID = Field(default_factory=uuid.uuid4)
     user_id: UUID = Field(default_factory=uuid.uuid4)
+    up_or_down_vote: bool = Field(default=True)
 
 class MoviePreferenceModel(MovieInteractionModel):
     """preference movie of a user"""
@@ -174,7 +182,7 @@ class MoviePreferenceModel(MovieInteractionModel):
 
 class MovieBlogModel(MovieInteractionModel):
     """blog about movie of a user"""
-    pass
+    content: str = Field(default_factory=str)
 
 # intent
 

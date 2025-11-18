@@ -7,7 +7,7 @@ from itsdangerous import URLSafeTimedSerializer
 import jwt
 from passlib.context import CryptContext
 
-from app.api.config import Config
+from api.config import Config
 from typing import Any
 passwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -42,6 +42,10 @@ class AccountUtils:
         payload["refresh"] = refresh
 
         token = jwt.encode(payload, key=Config.JWT_SECRET, algorithm=Config.JWT_ALGORITHM)
+
+        payload["token"] = token
+
+        return payload
 
     @staticmethod
     def decode_token(token: str) -> dict:

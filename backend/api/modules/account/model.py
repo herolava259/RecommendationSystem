@@ -46,12 +46,29 @@ class LoginRequest(BaseModel):
     password: str = Field(max_length=1024)
     check_sum: str = Field(max_length=256)
 
-    @field_validator("password")
-    def validate_password(self, value):
-        pass
+    @field_validator("signin_name")
+    @classmethod
+    def validate_signin_name(cls, value: str) -> str:
+        return value
+
     @model_validator(mode="after")
     def validate_request(self):
-        pass
+        return self
+
+
+class AccessTokenResponse(BaseModel):
+    access_token: str
+    user_data: dict
+    token_type: str
+    expire: int
+    refresh_token: dict
+    alg_type: str
+    claim: dict
+
+class LoginResponse(BaseModel):
+    succeed: bool
+    response_message: str
+    access_token: AccessTokenResponse | dict | None = Field(default = None)
 
 
 class ForgetPasswordRequest(BaseModel):
@@ -79,12 +96,12 @@ class ChangePasswordResponse(BaseModel):
     response_message: str = Field(max_length=2048)
 
 class RefreshTokenRequest(BaseModel):
-    refresh_token: str
+    refresh_token: dict
 
 class NewAccessTokenResponse(BaseModel):
     succeed: bool = Field(default=False)
     expire_time: timedelta = Field(default=timedelta(minutes=60))
-    access_token: str = Field(max_length=1024)
+    new_access_token: dict = Field(max_length=1024)
 
 
 class AccountPrivateInformationModel(BaseModel):
@@ -103,16 +120,23 @@ class AccountPrivateInformationModel(BaseModel):
 class AccountModel(BaseModel):
     id: UUID = Field(default_factory=uuid.uuid4)
     email: str
-    image_url: str = Field(max_length=1024)
+    image_url: str | None = Field(max_length=1024, default=None)
     signin_name: str = Field(max_length=64)
-    is_verified: bool = Field(default=False)
+
     active: bool = Field(default=False)
     pwd_hash: str = Field(max_length=1024)
     personal_identifier: str = Field(max_length=2048)
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
     private_information: Optional[AccountPrivateInformationModel] = Field(default_factory=AccountPrivateInformationModel)
+    verified_email: bool=Field(default=False)
 
+class EmailVerificationModel(BaseModel):
+    id: UUID = Field(default_factory=uuid.uuid4)
+    account_id: UUID = Field(default=uuid.uuid4)
+    activation_key: int=Field(max_length=1024)
+    expire_date: datetime =  Field(default_factory=datetime.now)
+    is_verified: bool=Field(default=False)
 
 class LogoutRequest(BaseModel):
     access_token: str = Field(default = "")
@@ -120,13 +144,6 @@ class LogoutResponse(BaseModel):
     succeed: bool = Field(default = True)
 
 
-class AccessTokenResponse(BaseModel):
-    access_token: str
-    token_type: str
-    expire: int
-    refresh_token: str
-    alg_type: str
-    claim: str
 
 class ChangePersonalAccountInformationRequest(BaseModel):
     new_address: str = Field(max_length=1024)

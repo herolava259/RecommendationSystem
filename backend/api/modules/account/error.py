@@ -4,11 +4,14 @@ from api.common.errors import ApplicationException
 
 class AccountException(ApplicationException):
     pass
-
+class VerifyEmailError(AccountException):
+    pass
 
 class InvalidTokenError(AccountException):
     pass
 
+class LoginError(AccountException):
+    pass
 
 class AccessTokenRequiredError(AccountException):
     pass

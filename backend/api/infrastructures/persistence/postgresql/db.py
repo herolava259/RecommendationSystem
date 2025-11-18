@@ -2,8 +2,9 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from typing import AsyncGenerator
 from sqlmodel import SQLModel
 import os
+from api.config import Config
 async_engine = create_async_engine(
-    url = os.getenv("POSTGRES_CONN_STRING"),
+    url = Config.SQLALCHEMY_DATABASE_URI,
     echo = True
 )
 
