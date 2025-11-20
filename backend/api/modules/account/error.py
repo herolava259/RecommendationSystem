@@ -7,6 +7,9 @@ class AccountException(ApplicationException):
 class VerifyEmailError(AccountException):
     pass
 
+class VerifyTokenError(AccountException):
+    pass
+
 class InvalidTokenError(AccountException):
     pass
 
@@ -24,7 +27,10 @@ class AccountAlreadyExistsError(AccountException):
 
 class InvalidCredentialsError(AccountException):
     pass
-
+class SignupAccountError(AccountException):
+    pass
+class LoginAccountError(AccountException):
+    pass
 
 class AccountNotVerifiedError(AccountException):
     pass

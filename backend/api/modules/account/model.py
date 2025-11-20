@@ -1,107 +1,18 @@
 
 
 import uuid
-from typing import List, Optional
+from typing import List,Optional,Mapping,Sequence, Self
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from pydantic_core.core_schema import FieldValidationInfo
-
+import json
 import re
 from datetime import datetime, timedelta
 from uuid import UUID
 from typing import Dict
 
-class CreateAccountRequest(BaseModel):
-    email: str
-    phone: str = Field(max_length=64)
-    signin_name: str = Field(max_length=64)
-    password: str = Field(max_length=64)
-    confirm_password: str = Field(max_length=64)
-    active: bool = Field(default=False)
-
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "first_name": "John",
-                "last_name": "Doe",
-                "username": "johndoe",
-                "email": "johndoe123@co.com",
-                "password": "testpass123",
-            }
-        }
-    }
-
-class CreateAccountResponse(BaseModel):
-    succeed: bool = Field(default=False)
-    response_message: str = Field(max_length=64)
-    navigate_home: bool = Field(default=False)
-    need_verify_email: bool = Field(default=False)
-    additional_msg: dict = Field(default_factory=dict)
-
-
-class LoginRequest(BaseModel):
-    email: str
-    signin_name: str = Field(max_length=64)
-    password: str = Field(max_length=1024)
-    check_sum: str = Field(max_length=256)
-
-    @field_validator("signin_name")
-    @classmethod
-    def validate_signin_name(cls, value: str) -> str:
-        return value
-
-    @model_validator(mode="after")
-    def validate_request(self):
-        return self
-
-
-class AccessTokenResponse(BaseModel):
-    access_token: str
-    user_data: dict
-    token_type: str
-    expire: int
-    refresh_token: dict
-    alg_type: str
-    claim: dict
-
-class LoginResponse(BaseModel):
-    succeed: bool
-    response_message: str
-    access_token: AccessTokenResponse | dict | None = Field(default = None)
-
-
-class ForgetPasswordRequest(BaseModel):
-    email: str
-    access_token: str = Field(default="")
-    personal_identifier: str = Field(default="")
-    check_sum: str = Field(default="")
-
-class ForgetPasswordResponse(BaseModel):
-    succeed: bool = Field(default=False)
-
-
-class ChangePasswordRequest(BaseModel):
-    signin_name: str = Field(max_length=1024)
-    password: str = Field(max_length=1024)
-    new_password: str = Field(max_length=1024)
-    confirm_password: str = Field(max_length=1024)
-    check_sum: str = Field(max_length=256)
-
-class ChangePasswordResponse(BaseModel):
-    succeed: bool = Field(default=False)
-    stay_logged_in: bool = Field(default=False)
-    token_stale: bool = Field(default=False)
-    need_confirm_email: bool = Field(default=False)
-    response_message: str = Field(max_length=2048)
-
-class RefreshTokenRequest(BaseModel):
-    refresh_token: dict
-
-class NewAccessTokenResponse(BaseModel):
-    succeed: bool = Field(default=False)
-    expire_time: timedelta = Field(default=timedelta(minutes=60))
-    new_access_token: dict = Field(max_length=1024)
+from api.modules.account.domain import EmailVerification
 
 
 class AccountPrivateInformationModel(BaseModel):
@@ -119,17 +30,23 @@ class AccountPrivateInformationModel(BaseModel):
 
 class AccountModel(BaseModel):
     id: UUID = Field(default_factory=uuid.uuid4)
-    email: str
+    email: str = Field(max_length=64, default="abc@email.com")
     image_url: str | None = Field(max_length=1024, default=None)
     signin_name: str = Field(max_length=64)
 
     active: bool = Field(default=False)
+    salt: str = Field(max_length=64)
     pwd_hash: str = Field(max_length=1024)
     personal_identifier: str = Field(max_length=2048)
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
-    private_information: Optional[AccountPrivateInformationModel] = Field(default_factory=AccountPrivateInformationModel)
-    verified_email: bool=Field(default=False)
+    email_verified: bool=Field(default=False)
+
+    # foreign models, depend on AccountModel,
+    private_information: Optional[AccountPrivateInformationModel] = Field(default = None)
+    email_verification: Optional["EmailVerificationModel"] = Field(default = None)
+    claim_principal: Optional["AccountClaimPrincipalModel"]=Field(default=None)
+
 
 class EmailVerificationModel(BaseModel):
     id: UUID = Field(default_factory=uuid.uuid4)
@@ -138,33 +55,40 @@ class EmailVerificationModel(BaseModel):
     expire_date: datetime =  Field(default_factory=datetime.now)
     is_verified: bool=Field(default=False)
 
-class LogoutRequest(BaseModel):
-    access_token: str = Field(default = "")
-class LogoutResponse(BaseModel):
-    succeed: bool = Field(default = True)
+class AccountClaimModel(BaseModel):
+    id: UUID = Field(default_factory=uuid.uuid4)
+    key: str = Field(default = "")
+    value: str = Field(default = "")
 
 
+class AccountClaimPrincipalModel(BaseModel):
+    def __init__(self,account_id: UUID,system_claims_lookup: str, custom_claims: str):
+        self.account_id = account_id
+        self.system_claims = json.loads(system_claims_lookup)
+        self.custom_claims = json.loads(custom_claims)
 
-class ChangePersonalAccountInformationRequest(BaseModel):
-    new_address: str = Field(max_length=1024)
-    new_phone_number: str = Field(max_length=64)
-    new_preference: str = Field(max_length=1024)
-    new_postcode: str = Field(max_length=32)
-    login_model: Optional[LoginRequest] = Field(default = None)
-    new_nick_name: str = Field(max_length=512)
+    account_id: UUID = Field(default=uuid.uuid4)
+    system_claims: Mapping[str, Sequence[str]] = Field(default_factory=dict)
+    custom_claims: Mapping[str, Sequence[str]] = Field(default_factory=dict)
 
-class ChangeAccountInformationResponse(BaseModel):
-    succeed: bool = Field(default = False)
-    confirmed_address: str = Field(max_length=1024)
-    confirmed_phone: str = Field(max_length=64)
-    confirmed_postcode: str = Field(max_length=32)
-    confirmed_preference: str = Field(max_length=1024)
+    def get_claim_of_account(self) -> dict:
 
+        claims = {**self.custom_claims, **self.system_claims}
+
+        return claims
+
+    @staticmethod
+    def no_claim(cls) -> Self:
+        return cls(account_id=uuid.UUID(int=0))
 
 
 # TODO: implement later
 
 from enum import Enum
+
+class AccountClaimGroupModel(BaseModel):
+    id: UUID = Field(default_factory=uuid.uuid4)
+    claims: List[AccountClaimModel] = Field(default_factory=list)
 
 class AccountState(str, Enum):
     Pending = "Pending"
@@ -173,8 +97,3 @@ class AccountState(str, Enum):
     Inactive = "Inactive"
     ScheduledDeactivate = "ScheduledDeactivate"
 
-class ConfirmChangePasswordRequest(BaseModel):
-    pass
-
-class ConfirmChangePasswordResponse(BaseModel):
-    pass

@@ -5,3 +5,4 @@
 # implement dependency injection service later: using decorator to retrieve some neccessary services
 # implement Connection Session Manager for connecting to postgresql
 # implement General Support Data Access
+# declare redis service
