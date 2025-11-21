@@ -11,8 +11,10 @@ import re
 from datetime import datetime, timedelta
 from uuid import UUID
 from typing import Dict
+from modules.account.utils import AccountUtils
+from modules.account.domain import EmailVerification
 
-from api.modules.account.domain import EmailVerification
+from functools import partial
 
 
 class AccountPrivateInformationModel(BaseModel):
@@ -37,7 +39,7 @@ class AccountModel(BaseModel):
     active: bool = Field(default=False)
     salt: str = Field(max_length=64)
     pwd_hash: str = Field(max_length=1024)
-    personal_identifier: str = Field(max_length=2048)
+    personal_identifier: str = Field(max_length=256, default=partial(AccountUtils.create_random_token, length=256))
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
     email_verified: bool=Field(default=False)
@@ -55,6 +57,13 @@ class EmailVerificationModel(BaseModel):
     expire_date: datetime =  Field(default_factory=datetime.now)
     is_verified: bool=Field(default=False)
 
+    @classmethod
+    def create_new(cls, account_model: AccountModel) -> "EmailVerificationModel":
+        return EmailVerificationModel(account_id=account_model.account_id,
+                                     activation_key = AccountUtils.random_number(8),
+                                     expire_date = datetime.now() + timedelta(weeks=2),
+                                    is_verified= False)
+
 class AccountClaimModel(BaseModel):
     id: UUID = Field(default_factory=uuid.uuid4)
     key: str = Field(default = "")
@@ -62,10 +71,20 @@ class AccountClaimModel(BaseModel):
 
 
 class AccountClaimPrincipalModel(BaseModel):
-    def __init__(self,account_id: UUID,system_claims_lookup: str, custom_claims: str):
+    def __init__(self,account_id: UUID,system_claims_lookup: str| dict | None = None, custom_claims: str | dict | None = None):
         self.account_id = account_id
-        self.system_claims = json.loads(system_claims_lookup)
-        self.custom_claims = json.loads(custom_claims)
+        if isinstance(system_claims_lookup, None):
+            system_claims_lookup = "{}"
+        elif isinstance(system_claims_lookup, dict):
+            system_claims_lookup = json.loads(system_claims_lookup)
+
+        if isinstance(custom_claims, None):
+            custom_claims = "{}"
+        elif isinstance(custom_claims, dict):
+            custom_claims = json.loads(custom_claims)
+
+        self.system_claims = system_claims_lookup
+        self.custom_claims = custom_claims
 
     account_id: UUID = Field(default=uuid.uuid4)
     system_claims: Mapping[str, Sequence[str]] = Field(default_factory=dict)
@@ -77,9 +96,20 @@ class AccountClaimPrincipalModel(BaseModel):
 
         return claims
 
-    @staticmethod
-    def no_claim(cls) -> Self:
+    @classmethod
+    def no_claim(cls) -> "AccountClaimPrincipalModel":
         return cls(account_id=uuid.UUID(int=0))
+
+    @classmethod
+    def create_new(cls, account_model: AccountModel, custom_claims: dict | None = None) -> "AccountClaimPrincipalModel":
+        if custom_claims is None:
+            custom_claims = {"user_name": account_model.user_name,
+                             "email": account_model.email,}
+        else:
+            custom_claims.update({"user_name": account_model.user_name,
+                             "email": account_model.email,})
+        return AccountClaimPrincipalModel(account_id=account_model.account_id, system_claims_lookup=None, custom_claims=custom_claims)
+
 
 
 # TODO: implement later

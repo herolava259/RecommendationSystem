@@ -1,4 +1,5 @@
 import logging
+import string
 import uuid
 
 from datetime import datetime, timedelta
@@ -8,18 +9,22 @@ from itsdangerous import URLSafeTimedSerializer
 import jwt
 from passlib.context import CryptContext
 
-from api.config import Config
+from config import Config
 from typing import Any,Dict,Sequence
 
 from cryptography.fernet import Fernet, MultiFernet
 import base64
 import json
-from api.config import Config
+from config import Config
 from typing import Tuple
 import secrets
 
-from api.modules.account.error import VerifyTokenError,InvalidTokenError
-from api.modules.account.model import AccountClaimPrincipalModel
+from modules.account.error import VerifyTokenError,InvalidTokenError
+from modules.account.model import AccountClaimPrincipalModel
+
+import hmac
+import hashlib
+import base64
 
 passwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -43,6 +48,11 @@ class AccountUtils:
     @staticmethod
     def random_choice(seq: Sequence) -> Sequence:
         return secrets.choice(seq)
+
+    @staticmethod
+    def random_number(num_digits = 10) -> int:
+        rand_numb = "".join(secrets.choice(string.digits) for _ in range(num_digits))
+        return int(rand_numb)
 
     @staticmethod
     def create_key():
@@ -77,15 +87,23 @@ class AccountUtils:
 
         return target_type(**deserialized_data)
 
+    @staticmethod
+    def password_salt_format(pwd_plain: str, salt: str) -> str:
+        return f"${salt}$-${pwd_plain}$"
 
     @staticmethod
-    def generate_pwd_hash(password) -> str:
-        hsh = passwd_context.hash(password)
+    def generate_pwd_hash(password, salt: str) -> str:
+
+        pwd_salt = AccountUtils.password_salt_format(password, salt)
+        hsh = passwd_context.hash(pwd_salt)
+
         return hsh
 
     @staticmethod
     def verify_pwd_hash(pwd: str, salt: str, hsh: str) -> bool:
-        return passwd_context.verify(pwd, hsh)
+        pwd_salt = AccountUtils.password_salt_format(pwd, salt)
+
+        return passwd_context.verify(pwd_salt, hsh)
 
     @staticmethod
     def create_access_token(account_claim_principal: AccountClaimPrincipalModel, expiry: timedelta = None, refresh: bool = False)\
@@ -144,13 +162,44 @@ class AccountUtils:
             return None
 
     @staticmethod
-    def decode_url_safe_token(token: str) -> Any:
+    def decode_url_safe_token(token: str) -> Any | dict:
         try:
             token_data = serializer.loads(token)
             return token_data
         except Exception as err:
             logging.error(str(err))
 
+    @staticmethod
+    def create_signature(data: dict) -> str:
+        # need implementation
+        h = hmac.new(Config.SecretKey.encode(), json.dumps(data).encode(), hashlib.sha512)
+        digest = h.digest()
+        return base64.b64encode(digest).decode()
+
+    @staticmethod
+    def verify_signature(data: dict, signature: str) -> bool:
+
+        real_signature = AccountUtils.create_signature(data)
+
+        return hmac.compare_digest(real_signature, signature)
+
+
+    @staticmethod
+    def encode_url_save_token(data: dict) -> str:
+
+        token = serializer.dumps(data)
+        return token
+
+    @staticmethod
+    def gen_email_verification_link(**kwargs) -> str:
+
+        signature = AccountUtils.create_signature(kwargs)
+
+        kwargs["signature"] = signature
+
+        token = AccountUtils.encode_url_save_token(kwargs)
+
+        return f"{Config.DOMAIN}/{Config.VERIFIER_URL}/account/email-verification?token={token}"
 
 if __name__ == "__main__":
     print("Module: ", jwt)

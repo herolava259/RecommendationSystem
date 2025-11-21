@@ -7,10 +7,10 @@ from pydantic import BaseModel
 from sqlmodel import Column, Field, Relationship, SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from api.modules.account.error import VerifyEmailError
-from api.modules.account.model import AccountPrivateInformationModel,EmailVerificationModel,AccountClaimModel,\
+from modules.account.error import VerifyEmailError
+from modules.account.model import AccountPrivateInformationModel,EmailVerificationModel,AccountClaimModel,\
     AccountClaimPrincipalModel
-from api.modules.account.model import AccountModel, AccountPrivateInformationModel
+from modules.account.model import AccountModel, AccountPrivateInformationModel
 from typing import List, Dict, Set, Type, Union, Optional, Any, Sequence, Tuple, TypeVar
 from sqlmodel import select, exists, update, delete
 import logging
@@ -28,8 +28,8 @@ class Account(SQLModel, table=True):
     active: bool = Field(default=False)
     created_at: datetime =Field(sa_column=Column(pg.TIMESTAMP, default=datetime.now))
     updated_at: datetime = Field(sa_column=Column(pg.TIMESTAMP, default=datetime.now))
+    personal_identifier: Optional[str] = Field(default=None, sa_column=Column(pg.VARCHAR, nullable=True))
     email_verified: bool = Field(default=False)
-
     private_information: Optional['AccountPrivateInformation'] = Relationship(
         back_populates="account",
         sa_relationship_kwargs={"lazy": "selectin"},
@@ -74,7 +74,11 @@ class AccountPrivateInformation(SQLModel, table=True):
     user_name: str = Field(max_length=64)
     preference: str = Field(max_length=1024)
     updated_at: datetime = Field(sa_column=Column(pg.TIMESTAMP, default=datetime.now))
+
+    #TODO: modify the column to JSON typ in postgresql later
     secret_qas: str = Field(default="")
+
+
     secret_key: str = Field(max_length=1024)
 
     account_id: uuid.UUID = Field(default=None, foreign_key="account.id", unique=True)
@@ -142,16 +146,15 @@ class AccountDomainTable(object):
 
         return AccountModel(**{key:model_data[key] for key in AccountModel.model_fields.keys()})
 
-    async def insert_activation(self,model: EmailVerificationModel,session: AsyncSession) -> Optional[EmailVerificationModel]:
-        new_record = self._dto_to_record(EmailVerificationModel, model)
+    async def insert_verification(self,model: EmailVerificationModel,session: AsyncSession) -> Optional[EmailVerificationModel]:
+        new_record = self._dto_to_record(EmailVerification, model)
 
         session.add(new_record)
 
         await session.commit()
         await session.refresh(new_record)
-        model_data = new_record.model_dump()
 
-        return self._record_to_dto(EmailVerificationModel, model_data)
+        return self._record_to_dto(EmailVerificationModel, new_record) if new_record else None
 
     async def upsert_private_information(self, model: AccountPrivateInformationModel, session: AsyncSession) \
             -> AccountPrivateInformationModel|None:
@@ -201,7 +204,8 @@ class AccountDomainTable(object):
                 return False
             update_activation_query = update(EmailVerification).where(EmailVerification.account_id==activation_id).values(is_verified = True)
             result = await session.exec(update_activation_query)
-            if result.rowcount != 1:
+
+            if result.rowcount > 1:
                 await session.rollback()
                 return False
             await session.commit()
@@ -211,6 +215,24 @@ class AccountDomainTable(object):
             raise ex
 
         return True
+
+    async def get_account_by_pi(self, pi: str, session: AsyncSession) -> Optional[AccountModel]:
+        query = select(Account).where(Account.person_id==pi)
+
+        result = await session.exec(query)
+
+        record = result.one()
+
+        return self._record_to_dto(AccountModel, record) if record else None
+
+    async def find_account_by_signin_name(self, signin_name: str, session: AsyncSession) -> Optional[AccountModel]:
+        query = select(Account).where(Account.signin_name==signin_name)
+
+        result = await session.exec(query)
+
+        record = result.one()
+
+        return self._record_to_dto(AccountModel, record) if record else None
 
 
     async def deactivate_account(self, account_id: uuid.UUID, session: AsyncSession) -> bool:
@@ -407,8 +429,25 @@ class AccountDomainTable(object):
             return True
         return False
 
-    async def get_claim_principal_of_account(self, account_id) -> Optional[AccountClaimPrincipalModel]:
-        pass
+    async def get_claim_principal_of_account(self, account_id, session: AsyncSession) -> Optional[AccountClaimPrincipalModel]:
+        query = select(Account).where(AccountClaimPrincipal.account_id == account_id)
+        record = (await session.exec(query)).one()
+
+        if not record:
+            return None
+        return self._record_to_dto(AccountClaimPrincipalModel, record)
+
+    async def insert_new_claim_principal(self, model: AccountClaimPrincipalModel, session: AsyncSession) -> Optional[AccountClaimPrincipalModel]:
+
+        record = self._dto_to_record(AccountClaimPrincipal, model)
+
+        session.add(record)
+        await session.commit()
+
+        await session.refresh(record)
+
+        return self._record_to_dto(AccountClaimPrincipalModel, record) if record is not None else None
+
 
     async def exists_account_with_fields(self, mapping_fields: Dict[str, Any], session: AsyncSession, and_between = True) -> bool:
 
@@ -430,7 +469,8 @@ class AccountDomainTable(object):
 
         result = await session.exec(account_query)
 
-        return result.scalar()
+        return result.scalar() == True
+
 
 ######################
 # utility functions below

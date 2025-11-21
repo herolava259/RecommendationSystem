@@ -9,7 +9,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 # from src.db.models import User
 # from src.db.redis import token_in_blocklist
 
-from .error import (
+from modules.account.error import (
     InvalidTokenError,
     RefreshTokenRequiredError,
     AccessTokenRequiredError,

@@ -1,5 +1,5 @@
 # error from Account module
-from api.common.errors import ApplicationException
+from common.errors import ApplicationException
 
 
 class AccountException(ApplicationException):

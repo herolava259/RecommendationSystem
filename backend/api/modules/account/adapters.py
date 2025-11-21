@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from uuid import UUID
 from typing import Dict
 
-from api.modules.account.model import AccountModel
+from modules.account.model import AccountModel
 
 
 class CreateAccountRequest(BaseModel):
@@ -25,7 +25,7 @@ class CreateAccountRequest(BaseModel):
                 "first_name": "John",
                 "last_name": "Doe",
                 "signin_name": "johndoe",
-                "email": "johndoe123@co.com",
+                "email": "choppermon123@co.com",
                 "password": "testpass123",
             }
         }
@@ -41,7 +41,7 @@ class CreateAccountResponse(BaseModel):
     response_message: str = Field(max_length=64)
     navigate_home: bool = Field(default=False)
     need_verify_email: bool = Field(default=False)
-    additional_msg: dict = Field(default_factory=dict)
+    additional_info: dict = Field(default_factory=dict)
 
 
 
@@ -108,10 +108,11 @@ class EmailVerificationRequest(BaseModel):
     activation_key: int = Field(default=0)
     email: str = Field(max_length=2048)
     signin_name: str = Field(max_length=64)
-    location_key: str = Field(default="")
+    personal_key: str = Field(default="")
 
 class EmailConfirmationResponse(BaseModel):
     succeed: bool = Field(default=False)
+    resp_msg: Optional[str] = Field(default=None)
 
 class LogoutRequest(BaseModel):
     access_token: str = Field(default = "")

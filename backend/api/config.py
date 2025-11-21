@@ -41,6 +41,7 @@ class NaiveSettings(object):
     VALIDATE_CERTS: bool = True
     DOMAIN: str
     SECRET_KEY: str
+    API_VERSION: int
 
     @classmethod
     def from_env_variables(cls) -> "NaiveSettings":
