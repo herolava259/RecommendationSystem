@@ -1,18 +1,16 @@
 
 
 import uuid
-from typing import List,Optional,Mapping,Sequence, Self
+from typing import List,Optional,Mapping,Sequence
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from pydantic_core.core_schema import FieldValidationInfo
 import json
-import re
 from datetime import datetime, timedelta
 from uuid import UUID
 from typing import Dict
 from modules.account.utils import AccountUtils
-from modules.account.domain import EmailVerification
 
 from functools import partial
 
@@ -59,7 +57,7 @@ class EmailVerificationModel(BaseModel):
 
     @classmethod
     def create_new(cls, account_model: AccountModel) -> "EmailVerificationModel":
-        return EmailVerificationModel(account_id=account_model.account_id,
+        return EmailVerificationModel(account_id=account_model.id,
                                      activation_key = AccountUtils.random_number(8),
                                      expire_date = datetime.now() + timedelta(weeks=2),
                                     is_verified= False)
@@ -73,14 +71,14 @@ class AccountClaimModel(BaseModel):
 class AccountClaimPrincipalModel(BaseModel):
     def __init__(self,account_id: UUID,system_claims_lookup: str| dict | None = None, custom_claims: str | dict | None = None):
         self.account_id = account_id
-        if isinstance(system_claims_lookup, None):
-            system_claims_lookup = "{}"
-        elif isinstance(system_claims_lookup, dict):
+        if system_claims_lookup is None:
+            system_claims_lookup = dict()
+        elif isinstance(system_claims_lookup, str):
             system_claims_lookup = json.loads(system_claims_lookup)
 
-        if isinstance(custom_claims, None):
-            custom_claims = "{}"
-        elif isinstance(custom_claims, dict):
+        if custom_claims is None:
+            custom_claims = dict()
+        elif isinstance(custom_claims, str):
             custom_claims = json.loads(custom_claims)
 
         self.system_claims = system_claims_lookup
@@ -103,12 +101,12 @@ class AccountClaimPrincipalModel(BaseModel):
     @classmethod
     def create_new(cls, account_model: AccountModel, custom_claims: dict | None = None) -> "AccountClaimPrincipalModel":
         if custom_claims is None:
-            custom_claims = {"user_name": account_model.user_name,
+            custom_claims = {"user_name": account_model.signin_name,
                              "email": account_model.email,}
         else:
-            custom_claims.update({"user_name": account_model.user_name,
+            custom_claims.update(**{"user_name": account_model.signin_name,
                              "email": account_model.email,})
-        return AccountClaimPrincipalModel(account_id=account_model.account_id, system_claims_lookup=None, custom_claims=custom_claims)
+        return AccountClaimPrincipalModel(account_id=account_model.id, system_claims_lookup=None, custom_claims=custom_claims)
 
 
 

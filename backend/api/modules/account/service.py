@@ -1,7 +1,6 @@
-import textwrap
+
 from datetime import timedelta
 
-from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 from starlette.templating import Jinja2Templates
 
@@ -19,23 +18,23 @@ logger = logging.getLogger(__name__)
 templates = Jinja2Templates(directory="api/infrastructures/emails/templates")
 
 
-from modules.account.adapters import (CreateAccountRequest,
-                                       CreateAccountResponse,
-                                       LoginRequest,
-                                       LoginResponse,
-                                       LogoutResponse,
-                                       LogoutRequest,
-                                       RefreshTokenRequest,
-                                       NewAccessTokenResponse,
-                                       ChangePersonalAccountInformationRequest,
-                                       ChangeAccountInformationResponse,
-                                       ChangePasswordRequest,
-                                       ChangePasswordResponse,
-                                       ConfirmChangePasswordRequest,
-                                       ConfirmChangePasswordResponse,
-                                       EmailConfirmationResponse,
-                                       EmailVerificationRequest
-                                        )
+from modules.account.ports import (CreateAccountRequest,
+                                   CreateAccountResponse,
+                                   LoginRequest,
+                                   LoginResponse,
+                                   LogoutResponse,
+                                   LogoutRequest,
+                                   RefreshTokenRequest,
+                                   NewAccessTokenResponse,
+                                   ChangePersonalAccountInformationRequest,
+                                   ChangeAccountInformationResponse,
+                                   ChangePasswordRequest,
+                                   ChangePasswordResponse,
+                                   ConfirmChangePasswordRequest,
+                                   ConfirmChangePasswordResponse,
+                                   EmailConfirmationResponse,
+                                   EmailVerificationRequest
+                                   )
 from modules.account.utils import AccountUtils
 
 
@@ -77,7 +76,6 @@ class SigninManager(object):
         return LogoutResponse(succeed=True)
 
     def refresh_token(self, req: RefreshTokenRequest) -> NewAccessTokenResponse:
-
 
         AccountUtils.verify_access_token(req.current_access_token, verify_for_refresh= True)
 
@@ -219,5 +217,9 @@ class AccountManager(object):
 
     def confirm_change_password(self, req: ConfirmChangePasswordRequest) -> ConfirmChangePasswordResponse:
         pass
+
+
+class AccountAuthorizationManager(object):
+    pass
 
 

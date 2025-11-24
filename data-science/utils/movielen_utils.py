@@ -8,12 +8,12 @@ import os
 
 
 
-class MoviLenLinkResource:
+class MovieLenLinkResource:
     ML100K = "http://files.grouplens.org/datasets/movielens/ml-100k.zip"
 
-def download_ml100k(dest_folder_name: str):
+def download_ml100k(dest_file_name: str):
 
-    dest_file_path = os.path.join("../datasets/movielen_datasets",dest_folder_name)
+    dest_file_path = os.path.join("../datasets/movielen_datasets",dest_file_name)
     urllib.request.urlretrieve("http://files.grouplens.org/datasets/movielens/ml-100k.zip", dest_file_path)
     zip_ref = zipfile.ZipFile('movielens.zip', "r")
     zip_ref.extractall()
