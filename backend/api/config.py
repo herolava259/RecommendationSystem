@@ -42,6 +42,16 @@ class NaiveSettings(object):
     DOMAIN: str
     SECRET_KEY: str
     API_VERSION: int
+    MINIO_URL: str
+    MINIO_DEFAULT_BUCKET: str # ~ bucket name
+    MINIO_ACCESS_KEY: str # ~ user name
+    MINIO_SECRET_KEY: str # ~ password
+
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
+    POSTGRES_HOST: str
+
 
     @classmethod
     def from_env_variables(cls) -> "NaiveSettings":
