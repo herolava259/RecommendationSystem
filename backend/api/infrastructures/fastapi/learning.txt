@@ -1,0 +1,4 @@
+1. dependencies
+- base:
+- advanced: <<[https://fastapi.tiangolo.com/advanced/advanced-dependencies/]>>
+
