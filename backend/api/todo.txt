@@ -1,0 +1,2 @@
+- brainstorming build upper layers for crud business requirements -> simplify simple works
+- design access data / action mechanisms using them like decorators

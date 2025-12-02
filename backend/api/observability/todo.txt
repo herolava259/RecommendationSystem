@@ -1,0 +1,4 @@
+should know
+- jaeger: is a distributed tracing system
+- prometheus: is an open-source monitoring and alerting toolkit
+- grafana: is an open-source visualization platform ~ kibana of elk stack
