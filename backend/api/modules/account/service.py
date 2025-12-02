@@ -1,4 +1,4 @@
-
+import uuid
 from datetime import timedelta
 
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -33,7 +33,8 @@ from modules.account.ports import (CreateAccountRequest,
                                    ConfirmChangePasswordRequest,
                                    ConfirmChangePasswordResponse,
                                    EmailConfirmationResponse,
-                                   EmailVerificationRequest
+                                   EmailVerificationRequest, CreatePersonalInformationRequest,
+                                   CreatePersonalInformationResponse
                                    )
 from modules.account.utils import AccountUtils
 
@@ -75,7 +76,7 @@ class SigninManager(object):
         # can using bloom filters to check presence of recalled access token
         return LogoutResponse(succeed=True)
 
-    def refresh_token(self, req: RefreshTokenRequest) -> NewAccessTokenResponse:
+    def refresh_token(self, req: RefreshTokenRequest, session: AsyncSession) -> NewAccessTokenResponse:
 
         AccountUtils.verify_access_token(req.current_access_token, verify_for_refresh= True)
 
@@ -208,6 +209,11 @@ class AccountManager(object):
             resp_msg="Email confirmed." if confirmed else "Email not confirmed.",
         )
 
+    def create_personal_information(self, req: CreatePersonalInformationRequest, session: AsyncSession)\
+            -> CreatePersonalInformationResponse:
+        pass
+
+
     def change_personal_information(self, req: ChangePersonalAccountInformationRequest, session: AsyncSession) -> ChangeAccountInformationResponse:
         pass
 
@@ -218,8 +224,21 @@ class AccountManager(object):
     def confirm_change_password(self, req: ConfirmChangePasswordRequest) -> ConfirmChangePasswordResponse:
         pass
 
+    
+
 
 class AccountAuthorizationManager(object):
-    pass
 
+    def add_custom_claims_to_account(self, key: str, value: str,account_id: uuid.UUID, session: AsyncSession):
+        pass
+
+    def add_system_claim_to_account(self, claim_id: uuid.UUID, account_id: uuid.UUID, session: AsyncSession):
+        pass
+
+
+    def create_new_system_claim(self, claim_key: str, claim_value: str, session: AsyncSession):
+        pass
+
+    def reclaim(self, account_id: uuid.UUID, claim_id: uuid.UUID, session: AsyncSession):
+        pass
 

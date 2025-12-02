@@ -1,5 +1,5 @@
 import uuid
-from datetime import date, datetime
+from datetime import datetime
 
 import sqlalchemy.dialects.postgresql as pg
 from pydantic import BaseModel
@@ -52,6 +52,7 @@ class Account(SQLModel, table=True):
         return f"<Account {self.signin_name}"
 
 class EmailVerification(SQLModel, table = True):
+    __tablename__ = "email_verification"
     id: uuid.UUID =  Field(sa_column=Column(pg.UUID,default=uuid.uuid4,nullable=False, primary_key=True, server_default=None))
     activation_key: int=Field(max_length=1024)
     is_verified: bool=Field(default=False)
@@ -217,13 +218,50 @@ class AccountDomainTable(object):
         return True
 
     async def get_account_by_pi(self, pi: str, session: AsyncSession) -> Optional[AccountModel]:
-        query = select(Account).where(Account.person_id==pi)
+        query = select(Account).where(Account.personal_identifier==pi)
 
         result = await session.exec(query)
 
         record = result.one()
 
         return self._record_to_dto(AccountModel, record) if record else None
+
+    async def get_account_by_email(self, email: str, session: AsyncSession, include_properties: str| None = None) -> Optional[AccountModel]:
+        query = select(Account).where(Account.email==email)
+
+        joined_loads = []
+
+        include_properties = include_properties.split(";") if include_properties else []
+
+        if "private_information" in include_properties:
+            joined_loads.append(joinedload(Account.private_information))
+        if "email_verification" in include_properties:
+            joined_loads.append(joinedload(Account.email_verification))
+        if "claim_principal" in include_properties:
+            joined_loads.append(joinedload(Account.claim_principal))
+
+        if include_properties:
+            query = query.options(*include_properties)
+
+        result = await session.exec(query)
+
+        record = result.one()
+
+        if not record:
+            return None
+
+        model = self._record_to_dto(AccountModel, record)
+
+        if "private_information" in include_properties and record.private_information is not None:
+            model.private_information = self._record_to_dto(AccountPrivateInformationModel, record.private_information)
+
+        if "email_verification" in include_properties and record.email_verification is not None:
+            model.email_verification = self._record_to_dto(EmailVerificationModel, record.email_verification)
+
+        if "claim_principal" in include_properties and record.claim_principal is not None:
+            model.claim_principal = self._record_to_dto(AccountClaimPrincipalModel, record.claim_principal)
+
+        return model
 
     async def find_account_by_signin_name(self, signin_name: str, session: AsyncSession) -> Optional[AccountModel]:
         query = select(Account).where(Account.signin_name==signin_name)

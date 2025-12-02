@@ -20,7 +20,7 @@ from typing import Tuple
 import secrets
 
 from modules.account.error import VerifyTokenError,InvalidTokenError
-from modules.account.model import AccountClaimPrincipalModel
+#from modules.account.model import AccountClaimPrincipalModel
 
 import hmac
 import hashlib
@@ -106,13 +106,13 @@ class AccountUtils:
         return passwd_context.verify(pwd_salt, hsh)
 
     @staticmethod
-    def create_access_token(account_claim_principal: AccountClaimPrincipalModel, expiry: timedelta = None, refresh: bool = False)\
+    def create_access_token(account_claim_principal: Any, expiry: timedelta = None, refresh: bool = False)\
             -> dict:
 
         payload: Dict[str, Any] = dict()
 
         payload["user"] = account_claim_principal.get_claim_of_account()
-        payload["exp"] = datetime.now() + (expiry or timedelta(second=ACCESS_TOKEN_EXPIRY))
+        payload["exp"] = datetime.now() + (expiry or timedelta(seconds=ACCESS_TOKEN_EXPIRY))
         payload["jti"] = str(uuid.uuid4())
         payload["refresh"] = refresh
 
@@ -159,7 +159,7 @@ class AccountUtils:
             return token_data
         except jwt.PyJWTError as err:
             logging.exception(err)
-            return None
+            return dict()
 
     @staticmethod
     def decode_url_safe_token(token: str) -> Any | dict:

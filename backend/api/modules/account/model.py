@@ -1,7 +1,7 @@
 
 
 import uuid
-from typing import List,Optional,Mapping,Sequence
+from typing import List, Optional, Mapping, Sequence, Set
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -11,6 +11,8 @@ from datetime import datetime, timedelta
 from uuid import UUID
 from typing import Dict
 from modules.account.utils import AccountUtils
+
+
 
 from functools import partial
 
@@ -108,7 +110,29 @@ class AccountClaimPrincipalModel(BaseModel):
                              "email": account_model.email,})
         return AccountClaimPrincipalModel(account_id=account_model.id, system_claims_lookup=None, custom_claims=custom_claims)
 
+    @property
+    def all_claim(self) -> Dict[str, Set[str]]:
 
+        claim_mapping: Dict[str, Set[str]] = dict()
+
+        for k in (set(self.custom_claims.keys()) | set(self.system_claims.keys())):
+            if claim_mapping.get(k, None) is None:
+                claim_mapping[k] = set()
+            if k in self.custom_claims:
+                claim_mapping[k] |= self.custom_claims[k]
+            if k in self.system_claims:
+                claim_mapping[k] |= self.system_claims[k]
+        return claim_mapping
+
+
+    def query_by_key(self, key: str) -> Set[str]:
+
+        claims: List[str] = []
+        if key in self.custom_claims.keys():
+            claims.extend(self.custom_claims[key])
+        if key in self.system_claims.keys():
+            claims.extend(self.system_claims[key])
+        return set(claims)
 
 # TODO: implement later
 

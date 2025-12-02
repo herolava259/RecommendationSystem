@@ -1,5 +1,5 @@
 
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -16,8 +16,6 @@ class CreateAccountRequest(BaseModel):
     model_config = {
         "json_schema_extra": {
             "example": {
-                "first_name": "John",
-                "last_name": "Doe",
                 "signin_name": "johndoe",
                 "email": "choppermon123@co.com",
                 "password": "testpass123",
@@ -68,15 +66,6 @@ class LoginResponse(BaseModel):
     response_message: str
     access_token: AccessTokenResponse | dict | None = Field(default = None)
 
-class ForgetPasswordRequest(BaseModel):
-    email: str
-    access_token: str = Field(default="")
-    personal_identifier: str = Field(default="")
-    check_sum: str = Field(default="")
-
-class ForgetPasswordResponse(BaseModel):
-    succeed: bool = Field(default=False)
-
 class ChangePasswordRequest(BaseModel):
     signin_name: str = Field(max_length=1024)
     password: str = Field(max_length=1024)
@@ -113,6 +102,13 @@ class LogoutRequest(BaseModel):
 class LogoutResponse(BaseModel):
     succeed: bool = Field(default = True)
 
+
+class CreatePersonalInformationRequest(BaseModel):
+    pass
+
+class CreatePersonalInformationResponse(BaseModel):
+    pass
+
 class ChangePersonalAccountInformationRequest(BaseModel):
     new_address: str = Field(max_length=1024)
     new_phone_number: str = Field(max_length=64)
@@ -133,3 +129,32 @@ class ConfirmChangePasswordRequest(BaseModel):
 
 class ConfirmChangePasswordResponse(BaseModel):
     pass
+
+
+####
+# Forget password flow:
+# client: req forget password
+# server: take challenge with personal qas
+# client: send answers
+# server: check answer if true send change password session to the email
+# client: click change password request and change password at the
+# server: verify new password and save new return success
+###
+
+
+# Step 1
+class ForgetPasswordRequest(BaseModel):
+    email: str = Field(...)
+    signin_name: str = Field(...)
+
+
+class ForgetPasswordResponse(BaseModel):
+    succeed: bool = Field(default=False)
+    challenge_questions: List[str] = Field(default_factory=list)
+    session_id: str = Field(default_factory=str) # should be saved into the db  (save in postgresql)
+
+
+# Step 2
+
+class AnswerChallengeQuestionsRequest(BaseModel):
+    session_id: str = Field()

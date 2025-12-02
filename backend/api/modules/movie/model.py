@@ -1,4 +1,6 @@
+import enum
 import uuid
+from abc import ABC, abstractmethod
 from typing import List, Optional, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -15,15 +17,22 @@ from typing import Dict, Literal, Any
 
 #abstract model
 
-class PeopleModel(BaseModel):
+class PersonModel(BaseModel):
     id: UUID = Field(default_factory=uuid.uuid4)
     name: Optional[str] = None
 
-class RelationshipModel(BaseModel):
-    id: UUID = Field(default_factory=uuid.uuid4)
-    type: Literal["one-to-one", "one-to-many", "many-to-many"] = Field(
-        default="one-to-one",
-    )
+class RelationshipType(str, enum.Enum):
+    OneOne = "one-to-one"
+    OneMany = "one-to-many"
+    ManyMany = "many-to-many"
+
+class RelationshipModel(BaseModel, ABC):
+    type: RelationshipType = Field(
+        default=RelationshipType.OneOne,)
+
+    @abstractmethod
+    def complex_key(self) -> str:
+        pass
 
 # detail model
 
@@ -38,13 +47,17 @@ class MovieModel(BaseModel):
     imdb_score: float = Field(default=0.0)
     type: Literal["tv-series-show", "film-season-short", "block-bluster", "feature-film"] = Field()
 
+class MovieStatus(str, enum.Enum):
+    Unknown = "unknown"
+    New = "new"
+    Released = "released"
 
-class MovieDetailModel(BaseModel):
+class MovieDetailsModel(BaseModel):
     id: UUID = Field(default_factory=uuid.uuid4)
     movie_id: UUID = Field(default_factory=uuid.uuid4)
     description: str = Field(default="")
     country: str = Field(default="")
-    status: Literal["unknown", "new", "released"] = Field(default="unknown")
+    status: MovieStatus = Field(default=MovieStatus.Unknown)
     tagline: str = Field(default="")
     original_language: str = Field(default="")
     original_title: str = Field(default="")
@@ -96,11 +109,11 @@ class MovieGenreRelationshipModel(RelationshipModel):
 
 #II. relate to humans and relationship between
 
-class StaffModel(PeopleModel):
+class StaffModel(PersonModel):
     id: UUID = Field(default_factory=uuid.uuid4)
     company_id: UUID = Field(default_factory=uuid.uuid4)
 
-class ActorModel(PeopleModel):
+class ActorModel(PersonModel):
     name: Optional[str] = Field(default= "Action")
 
 class MovieDirectorModel(StaffModel):
@@ -118,11 +131,11 @@ class MovieCastModel(BaseModel):
     movie_id: UUID = Field(default_factory=uuid.uuid4)
 
 
-class MovieCharacterModel(PeopleModel):
+class MovieCharacterModel(PersonModel):
     movie_id: UUID = Field(default_factory=uuid.uuid4)
     actor_id: UUID = Field(default_factory=uuid.uuid4)
 
-class MovieWriterModel(PeopleModel):
+class MovieWriterModel(PersonModel):
 	pass
 
 
@@ -140,22 +153,30 @@ class StudioModel(OrganizationModel):
     country: Optional[str] = Field(default= "US")
 
 class MovieProductionRelationshipModel(RelationshipModel):
-	"""Many-to-many relationship."""
-	movie_id: UUID = Field(default_factory=uuid.uuid4)
-	production_company_id: UUID = Field(default_factory=uuid.uuid4)
+    """Many-to-many relationship."""
+
+    movie_id: UUID = Field(default_factory=uuid.uuid4)
+    production_company_id: UUID = Field(default_factory=uuid.uuid4)
+
+    @property
+    def complex_key(self) -> str:
+        return f"{self.movie_id}-{self.production_company_id}"
 
 class MovieStudioRelationshipModel(RelationshipModel):
-	"""Many-to-many relationship."""
-	movie_id: UUID = Field(default_factory=uuid.uuid4)
-	studio_id: UUID = Field(default_factory=uuid.uuid4)
+    """Many-to-many relationship."""
+    movie_id: UUID = Field(default_factory=uuid.uuid4)
+    studio_id: UUID = Field(default_factory=uuid.uuid4)
 
+    @property
+    def complex_key(self) -> str:
+        return f"{self.movie_id}-{self.studio_id}"
 
 #IV. reviews, rating, voting, like/dislike, comments => movie-oriented
 
 class MovieInteractionModel(BaseModel):
     id: UUID = Field(default_factory=uuid.uuid4)
-    created_at: datetime = Field(default_factory=datetime)
-    updated_at: datetime = Field(default_factory=datetime)
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
     movie_id: UUID = Field(default_factory=uuid.uuid4)
     user_id: UUID = Field(default_factory=uuid.uuid4)
 

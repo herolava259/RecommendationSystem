@@ -1,9 +1,11 @@
 # error from Account module
-from common.errors import ApplicationException
+from common.base import ApplicationException
 
 
 class AccountException(ApplicationException):
     pass
+
+
 class VerifyEmailError(AccountException):
     pass
 
