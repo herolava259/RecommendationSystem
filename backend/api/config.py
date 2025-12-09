@@ -42,15 +42,25 @@ class NaiveSettings(object):
     DOMAIN: str
     SECRET_KEY: str
     API_VERSION: int
+
+    # MINIO setup
     MINIO_URL: str
     MINIO_DEFAULT_BUCKET: str # ~ bucket name
     MINIO_ACCESS_KEY: str # ~ user name
     MINIO_SECRET_KEY: str # ~ password
 
+    # POSTGRES app db setup
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
     POSTGRES_HOST: str
+
+    # JAEGER otel setup
+    JAEGER_GRPC_ADDR: str
+    JAEGER_HTTP_ADDR: str
+
+    # loki endpoint exporter
+    LOKI_ENDPOINT: str
 
 
     @classmethod

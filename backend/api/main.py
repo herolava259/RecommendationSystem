@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from infrastructures.fastapi.middlewares.need import register_middleware
 # import router for each module
 
+
+# add open telemetry
+
 #from common.errors import
 
 
@@ -37,7 +40,7 @@ app = FastAPI(
 
 @app.get(f"{version_prefix}/health", tags=["Health"])
 async def health_check():
-    return {"status": "I'm a API Ninja"}
+    return {"status": "I'm an API Ninja"}
 
 
 
