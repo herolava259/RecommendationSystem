@@ -80,3 +80,12 @@ def setup_loki_logger(name: str, level: int = logging.INFO):
     logger.addHandler(handler)
 
     return logger
+
+
+# third way: using promtail retrieve stdout log file from docker container
+
+def setup_format_logger(name: str, level: int = logging.INFO):
+    logging.basicConfig(level=level,
+                        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
+    return logging.getLogger(name)
