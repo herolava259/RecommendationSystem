@@ -1,3 +1,11 @@
+# Concept:
+- Prometheus - metric collector
+- Loki - Log collector
+- Jaeger - Tracing Collector
+- Otel-Collector - middle man between the source and prometheus, loki, jaeger
+- Grafana: visualizing data
+- Storage: ex: Casandra for save data 
+
 # Metrics in Open Telemetry 
 
 - Request Counter 

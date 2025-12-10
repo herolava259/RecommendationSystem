@@ -25,7 +25,7 @@ from modules.movie.model import (
 )
 
 ####
-# Generic Models
+# general entities
 ####
 
 class Person(SQLModel,ABC, table= False):
@@ -37,7 +37,7 @@ class RelationshipEntity(SQLModel,ABC, table=False):
 
 
 ###
-# Domain model
+# Domain entities
 ###
 class Movie(SQLModel, table=True):
 
@@ -81,6 +81,8 @@ class MovieDetails(SQLModel, table=True):
     def __repr__(self):
         return f"Movie-Details {self.description}"
 
+class MovieGallery(SQLModel, table=True):
+    __tablename__ = "movie_gallery"
 
 
 
@@ -89,7 +91,11 @@ class MovieDetails(SQLModel, table=True):
 ## database access
 ####
 
-class MovieDataTable(SupportRepository[Movie, MovieModel]):
+class MovieTable(SupportRepository[Movie, MovieModel]):
+    def __init__(self, session: AsyncSession):
+        super().__init__(session)
+
+class MovieDetailTable(SupportRepository[MovieDetails, MovieDetailsModel]):
     def __init__(self, session: AsyncSession):
         super().__init__(session)
 
