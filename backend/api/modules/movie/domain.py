@@ -32,7 +32,7 @@ class Person(SQLModel,ABC, table= False):
     id: UUID = Field(sa_column = Column(pg.UUID, primary_key = True, default = uuid4, nullable= False, unique = True, server_default = None))
     name: Optional[str] = Field(sa_column= Column(pg.VARCHAR, nullable=True))
 
-class RelationshipEntity(SQLModel,ABC, table=False):
+class RelationshipBase(SQLModel,ABC, table=False):
     type: RelationshipType = Field(sa_column= Column(pg.ENUM, default = RelationshipType.OneOne))
 
 
@@ -72,7 +72,6 @@ class MovieDetails(SQLModel, table=True):
     network: str = Field(nullable=False, default="movie-network")
     director: Dict[str, Any] = Field(sa_column=Column(pg.JSONB, nullable=False, server_default="{'name': 'director-name', 'id': '00000000-0000-0000-0000-000000000000'}"))
     writer: Dict[str, Any] = Field(sa_column=Column(pg.JSONB, nullable=False, server_default="{'name': 'writer-name', 'id': '00000000-0000-0000-0000-000000000000'}"))
-
 
     # foreign key
     movie_id: UUID = Field(sa_column=Column(pg.UUID, ForeignKey("movie.id")))

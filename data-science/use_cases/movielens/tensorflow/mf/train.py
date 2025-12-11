@@ -1,4 +1,4 @@
-from build_models_with_frameworks.tensorflow.mf.model import MatrixFactorizationModel
+from build_models_with_frameworks.movielens.tensorflow.mf.model import MatrixFactorizationModel
 import tensorflow as tf
 import numpy as np
 

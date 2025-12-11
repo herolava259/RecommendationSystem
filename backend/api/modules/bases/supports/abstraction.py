@@ -5,9 +5,13 @@ from pydantic import BaseModel
 from typing import Dict, Any, List, Generator, Tuple, Sequence, TypeVar, Optional, Generic
 
 from sqlmodel import SQLModel
+from sqlalchemy import Table
 
-TModel = TypeVar('TModel', bound=BaseModel)
-TEntity = TypeVar('TEntity', bound=SQLModel)
+from modules.bases.supports.DtoModel import DtoModel
+from modules.bases.supports.EntityBase import EntityBase
+
+TModel = TypeVar('TModel', bound=DtoModel)
+TEntity = TypeVar('TEntity', bound=EntityBase)
 
 class ISupportRepository(ABC, Generic[TEntity,TModel]):
 
@@ -16,12 +20,12 @@ class ISupportRepository(ABC, Generic[TEntity,TModel]):
         raise NotImplementedError()
 
     @abstractmethod
-    def find_by_id(self, idx: UUID) -> TModel:
+    def find_by_id(self, idx: UUID) -> Optional[TModel]:
         raise NotImplementedError()
 
 
     @abstractmethod
-    async def find_by_field(self, field_name: str, value: Any) -> List[TModel]:
+    async def find_by_field(self, field_name: str, value: Any) -> Sequence[TModel]:
         raise NotImplementedError()
 
 
@@ -43,11 +47,11 @@ class ISupportRepository(ABC, Generic[TEntity,TModel]):
         raise NotImplementedError()
 
     @abstractmethod
-    async def query_raw(self, query_question: str, parameters: Dict[str, Any]) -> List[TModel]:
+    async def query_raw(self, query_question: str, parameters: Dict[str, Any]) -> Sequence[TModel]:
         raise NotImplementedError()
 
     @abstractmethod
-    async def query_raw_take_first(self, query_question: str, parameters: Dict[str, Any]) -> TModel:
+    async def query_raw_take_first(self, query_question: str, **kwargs) -> TModel:
         raise NotImplementedError()
 
     @abstractmethod
@@ -55,7 +59,7 @@ class ISupportRepository(ABC, Generic[TEntity,TModel]):
         raise NotImplementedError()
 
     @abstractmethod
-    async def delete_by_id(self, idx: UUID) -> TModel:
+    async def delete_by_id(self, idx: UUID) -> bool:
         raise NotImplementedError()
 
 
