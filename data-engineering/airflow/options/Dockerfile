@@ -21,12 +21,12 @@ RUN DOWNLOAD_URL="https://download.java.net/java/GA/jdk11/9/GPL/openjdk-11.0.2_l
     && java --version
 
 
-COPY requirements.txt .
+COPY ../requirements.txt .
 
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install --no-cache-dir -r requirements.txt
 
-COPY scripts scripts
+COPY ../scripts scripts
 RUN chmod +x scripts
 
 USER $AIRFLOW_UID

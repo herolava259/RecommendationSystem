@@ -4,4 +4,6 @@
 1. Create a model represent for accesscontrol stuff. with 1 field of 1 model, with current role or default (applied like obvious)
 2. using decorators to transform or hidden when data go out
 3. input validation
-4. all like rules
+4. all like rules:
+5. provide various of action control for life cycle of record of table: ex: readonly can be applied on one column or entire table
+beside has some kind of action control: how often data change on a column

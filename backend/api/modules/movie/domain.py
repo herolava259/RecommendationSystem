@@ -16,6 +16,7 @@ from sqlmodel import ARRAY, VARCHAR, JSON, Text, String, Enum, Double
 
 import logging
 
+from modules.bases.supports.EntityBase import EntityBase
 from modules.bases.supports.implementation import SupportRepository
 from modules.movie.model import (
     MovieModel,
@@ -39,10 +40,10 @@ class RelationshipBase(SQLModel,ABC, table=False):
 ###
 # Domain entities
 ###
-class Movie(SQLModel, table=True):
+class Movie(EntityBase, table=True):
 
     __tablename__ = 'movie'
-    id: UUID = Field(sa_column=Column(pg.UUID, primary_key=True, default=uuid4, nullable=False, server_default=None))
+    # id: UUID = Field(sa_column=Column(pg.UUID, primary_key=True, default=uuid4, nullable=False, server_default=None))
     title: str = Field(nullable=False, default="movie-title")
     summary: str = Field(nullable=False, default="movie-summary")
     duration: int = Field(nullable=True, default=120)
@@ -57,11 +58,11 @@ class Movie(SQLModel, table=True):
     # define constraints: foreign key, index, unique, auto-increment,...
 
 
-class MovieDetails(SQLModel, table=True):
+class MovieDetails(EntityBase, table=True):
 
     __tablename__ = "movie_details"
 
-    id: UUID = Field(sa_column=Column(pg.UUID, primary_key=True, default=uuid4, nullable=False, server_default=None))
+    #id: UUID = Field(sa_column=Column(pg.UUID, primary_key=True, default=uuid4, nullable=False, server_default=None))
     description: str = Field(nullable=False, default="movie-description")
     country: str = Field(nullable=False, default="movie-country")
     status: MovieStatus = Field(sa_column=Column(pg.ENUM,name="movie_status_enum", default = MovieStatus.Unknown, nullable=False))
@@ -92,18 +93,8 @@ class MovieGallery(SQLModel, table=True):
 
 class MovieTable(SupportRepository[Movie, MovieModel]):
     def __init__(self, session: AsyncSession):
-        super().__init__(session)
+        super().__init__(Movie,MovieModel,session)
 
 class MovieDetailTable(SupportRepository[MovieDetails, MovieDetailsModel]):
     def __init__(self, session: AsyncSession):
-        super().__init__(session)
-
-
-class MovieDataAccess(object):
-    def __init__(self, **kwargs):
-        self.kwargs = kwargs
-        self.account_readonly_fields: Set[str] = {"id"}
-        self.account_private_fields: Set[str] = set()
-        self.private_information_readonly_fields: Set[str] = {"id"}
-        self.private_information_private_fields: Set[str] = set()
-
+        super().__init__(MovieDetails, MovieDetailsModel, session)

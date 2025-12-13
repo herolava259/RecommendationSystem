@@ -1,0 +1,91 @@
+networks:
+  spark_pg_network:
+
+services:
+  spark-master:
+    image: custom_spark
+    build: .
+    container_name: spark-master
+    networks:
+      - spark_pg_network
+    entrypoint: /bin/bash
+    command: -c "/opt/spark/sbin/start-master.sh; tail -f /dev/null"
+    ports:
+      - "8080:8080"
+      - "4040:4040"
+    volumes:
+      - .:/app
+      - "spark-events:/opt/spark/events"
+
+  spark-worker:
+    image: custom_spark
+    container_name: spark-worker1
+    networks:
+      - spark_pg_network
+    entrypoint: /bin/bash
+    command: -c "/opt/spark/sbin/start-worker.sh  spark://spark-master:7077; tail -f /dev/null"
+    volumes:
+      - spark-events:/opt/spark/events
+
+  spark-history-server:
+    image: custom_spark
+    build: .
+    container_name: spark-history-server
+    networks:
+      - spark_pg_network
+    entrypoint: /bin/bash
+    command: -c "/opt/spark/sbin/start-history-server.sh; tail -f /dev/null"
+    volumes:
+      - spark-events:/opt/spark/events
+    ports:
+      - '18080:18080'
+
+  postgres:
+    image: postgres:13
+    restart: always
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - spark_pg_network
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    networks:
+      - spark_pg_network
+    environment:
+      - PGADMIN_DEFAULT=root@root.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+    ports:
+      - "8080:80"
+
+  minio:
+    image: quay.io/minio/minio
+    command: server /data --console-address ":9001"
+    container_name: minio
+    networks:
+      - spark_pg_network
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+
+  mc:
+    image: quay.io/minio/mc
+    container_name: mc
+    depends_on:
+      - minio
+    networks:
+      - spark_pg_network
+    volumes:
+      - ./init-minio.sh:/init-minio.sh
+      - ./minio_data.csv:/sample.csv
+      - ./policy.json:/policy.json
+    entrypoint: ./init-minio.sh
+
+volumes:
+  spark-events:

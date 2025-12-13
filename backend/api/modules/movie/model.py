@@ -12,6 +12,8 @@ from datetime import datetime, timedelta
 from uuid import UUID
 from typing import Dict, Literal, Any
 
+from modules.bases.supports.DtoModel import DtoModel
+
 
 ## dtos model
 
@@ -38,8 +40,8 @@ class RelationshipModel(BaseModel, ABC):
 
 
 #I. some stuffs oriented movie
-class MovieModel(BaseModel):
-    id: UUID = Field(default_factory=uuid.uuid4)
+class MovieModel(DtoModel):
+    #id: UUID = Field(default_factory=uuid.uuid4)
     title: str = Field(default="Title")
     summary: str = Field(default="Summary")
     duration: int = Field(default=0)
@@ -52,8 +54,8 @@ class MovieStatus(str, enum.Enum):
     New = "new"
     Released = "released"
 
-class MovieDetailsModel(BaseModel):
-    id: UUID = Field(default_factory=uuid.uuid4)
+class MovieDetailsModel(DtoModel):
+    #id: UUID = Field(default_factory=uuid.uuid4)
     movie_id: UUID = Field(default_factory=uuid.uuid4)
     description: str = Field(default="")
     country: str = Field(default="")
