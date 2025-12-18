@@ -1,4 +1,3 @@
-import tensorflow as tf
 from tensorflow.keras.initializers import RandomNormal
 from typing import Union, Set, List
 import tensorflow as tf

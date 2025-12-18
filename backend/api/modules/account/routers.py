@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 from modules.account.dependency import get_current_user, RefreshTokenBearer, AccessTokenBearer
 from modules.account.service import AccountManager, SigninManager
-from modules.account.utils import AccountUtils
+from modules.account.utils import AccountHelper
 from modules.account.ports import (
     CreateAccountResponse,
     CreateAccountRequest, EmailConfirmationResponse, EmailVerificationRequest, LoginRequest, LogoutResponse,

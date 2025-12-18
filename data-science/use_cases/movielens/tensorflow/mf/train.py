@@ -1,6 +1,9 @@
-from build_models_with_frameworks.movielens.tensorflow.mf.model import MatrixFactorizationModel
+
 import tensorflow as tf
 import numpy as np
+
+from use_cases.movielens.tensorflow.mf.model import MatrixFactorizationModel
+
 
 def setup_mf_model(embedding_dims, num_users, num_items,user_vocab, item_vocab, lr = 0.002):
     model = MatrixFactorizationModel(embedding_dims, num_users, num_items, user_vocab, item_vocab)
@@ -32,10 +35,10 @@ def oo_train_mf_model(mf_model, df, num_epochs=2, checkpoint_path="/kaggle/worki
     # callbacks
     log_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir)
     checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path)
-    earlystopping_callback = tf.keras.callbacks.EarlyStopping()
+    early_stopping_callback = tf.keras.callbacks.EarlyStopping()
 
     history = mf_model.fit(train_dataset,
                            epochs=num_epochs,
                            validation_data=val_dataset,
-                           callbacks=[log_callback, checkpoint_callback, earlystopping_callback])
+                           callbacks=[log_callback, checkpoint_callback, early_stopping_callback])
     return history

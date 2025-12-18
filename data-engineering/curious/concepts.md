@@ -1,7 +1,7 @@
 
 
 ## Star Schema 
-- is a schema design in data warehouse
+- is a schema design style in data warehouse
 - Include:
   - Fact Table, (info): in the middle
   - Dimension Tables (dim/description): in around
@@ -20,7 +20,7 @@
     - version/ scheme evolution: what have columns recently added/drop/change-scheme? 
 - Catalog in DWH vs Catalog in Data-Lake -> Diff:
   - In Warehouse(Snowflake/Redshift/BigQuery): internal metadata of the system. organizing:>> +schema, +table, +view, +procedures
-  - In Data-Lake (Iceberg/Delta/Hudi): Catalog is not a built-in thing — it is a required component to manage files in object storage (S3, MinIO, HDFS).
+  - In Data-Lake/Lake-house (Iceberg/Delta/Hudi): Catalog is not a built-in thing — it is a required component to manage files in object storage (S3, MinIO, HDFS).
 - Benefit:
   - Standard Schema
   - Ease to access, query
@@ -38,3 +38,8 @@
 - 3-NF:
     - 2-NF
     - No transitive dependencies
+
+## Auto Compact vs Optimize Writing 
+???
+## Map-Reduce
+???

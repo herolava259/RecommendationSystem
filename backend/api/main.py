@@ -47,6 +47,6 @@ async def health_check():
 # add errors, exceptions
 
 # add middlewares
-
+register_middleware(app)
 
 # add api routers

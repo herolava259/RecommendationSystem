@@ -6,6 +6,8 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 from modules.account.model import AccountModel
 
+from uuid import UUID, uuid4
+
 
 class CreateAccountRequest(BaseModel):
     email: str
@@ -34,6 +36,7 @@ class CreateAccountResponse(BaseModel):
     navigate_home: bool = Field(default=False)
     need_verify_email: bool = Field(default=False)
     additional_info: dict = Field(default_factory=dict)
+    account_id: UUID | None = Field(default=None)
 
 
 
@@ -103,10 +106,10 @@ class LogoutResponse(BaseModel):
     succeed: bool = Field(default = True)
 
 
-class CreatePersonalInformationRequest(BaseModel):
+class CreatePrivateInformationRequest(BaseModel):
     pass
 
-class CreatePersonalInformationResponse(BaseModel):
+class CreatePrivateInformationResponse(BaseModel):
     pass
 
 class ChangePersonalAccountInformationRequest(BaseModel):

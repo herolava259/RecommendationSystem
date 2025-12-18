@@ -81,3 +81,42 @@
   - airflow-trigger: for handling event-driven triggers in airflow
   - airflow-init: initializes airflow envs
   - airflow-cli: cli that is used to interact with airflow-env
+
+## Hadoop-Hive 
+
+### Hadoop:
+- is an open-source framework to store and process big-data in distributed system.
+- include 2 components: 1.Map-Reduce, 2.HDFS (Hadoop Distributed File System)
+- Map-Reduce: parallel programming model for distributed system. include 2 stage:
+  - map: split tasks, groups and schedule for them on distributed computation nodes to processing tasks
+  - reduce: merging results from workers
+- HDFS: 
+  - Distributed File System
+- It contains other tools 
+  - Sqoop: i/o for data from HDFS to RDBMS
+  - Pig: procedure programming framework for MapReduce 
+  - Hive: a framework provide SQL syntax for users write sql scripts
+### Hive:
+- is a data warehouse infra engine for processing structured data in Hadoop
+- is **not** a:
+  - database
+  - tool/engine for OTLP(Online Transaction Processing)
+  - real-time query engine
+- features:
+  - erd, processing data for HDFS
+  - be made for OLAP (OnLine Analytic Processing)
+  - familiar, quickly, scalable
+- architecture:
+  - High layer:
+    - User-interface. Include:
+      - Web UI
+      - Hive CLI
+      - HD Insight ???
+      - library for programming
+  - Middle layer:
+    - Meta store
+    - For Map-Reduce:
+      - Hive QL Process Engine
+      - Execution Engine
+  - Low Layer:
+    - HDFS or HBASE Data Storage

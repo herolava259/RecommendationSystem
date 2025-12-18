@@ -33,10 +33,10 @@ from modules.account.ports import (CreateAccountRequest,
                                    ConfirmChangePasswordRequest,
                                    ConfirmChangePasswordResponse,
                                    EmailConfirmationResponse,
-                                   EmailVerificationRequest, CreatePersonalInformationRequest,
-                                   CreatePersonalInformationResponse
+                                   EmailVerificationRequest, CreatePrivateInformationRequest,
+                                   CreatePrivateInformationResponse
                                    )
-from modules.account.utils import AccountUtils
+from modules.account.utils import AccountHelper
 
 
 class SigninManager(object):
@@ -52,7 +52,7 @@ class SigninManager(object):
         if not account_model.active:
             raise LoginError(f"Account {req.signin_name} not active")
 
-        if AccountUtils.verify_pwd_hash(req.password, account_model.salt ,account_model.pwd_hash):
+        if AccountHelper.verify_pwd_hash(req.password, account_model.salt , account_model.pwd_hash):
             raise LoginError(f"Account password {req.signin_name} does not match")
 
         # TODO: retrieve role claim later, default: role: admin
@@ -65,7 +65,7 @@ class SigninManager(object):
 
         return LoginResponse(succeed=True,
                             response_message= f"Account logged in successfully",
-                            access_token= AccountUtils.create_access_token(principal,
+                            access_token= AccountHelper.create_access_token(principal,
                                                                             expiry= timedelta(minutes=120),
                                                                             refresh=True)
         )
@@ -78,7 +78,7 @@ class SigninManager(object):
 
     def refresh_token(self, req: RefreshTokenRequest, session: AsyncSession) -> NewAccessTokenResponse:
 
-        AccountUtils.verify_access_token(req.current_access_token, verify_for_refresh= True)
+        AccountHelper.verify_access_token(req.current_access_token, verify_for_refresh= True)
 
         curr_access_token = req.current_access_token
 
@@ -86,7 +86,7 @@ class SigninManager(object):
             raise RefreshTokenRequiredError("Current Access token is not permitted require new access token")
 
         return NewAccessTokenResponse(succeed=True,
-                                      new_access_token=AccountUtils.create_access_token(
+                                      new_access_token=AccountHelper.create_access_token(
                                           curr_access_token.get("user", {}),
                                           expiry= timedelta(minutes=120),
                                           refresh=True
@@ -138,9 +138,9 @@ class AccountManager(object):
             navigate_home = True
 
         # step 5: background job or sending a task to message broker about activating account, especially about sending email to activate account
-        verify_link=AccountUtils.gen_email_verification_link(email=new_verify_model.email,
-            activation_key=new_verify_model.activation_key,
-            pi=saved_account_model.personal_identifier,)
+        verify_link=AccountHelper.gen_email_verification_link(email=new_verify_model.email,
+                                                              activation_key=new_verify_model.activation_key,
+                                                              pi=saved_account_model.personal_identifier, )
 
 
         email_content=templates.get_template("email-verification.html").render(
@@ -154,9 +154,9 @@ class AccountManager(object):
                                      response_message = "Created new account successfully, Please verify account to step next.",
                                      navigate_home = navigate_home,
                                      need_verify_email= True,
-                                     additional_info= {"token": AccountUtils.create_access_token(new_principal,
-                                                                                                expiry= timedelta(minutes=60),
-                                                                                                refresh = False),
+                                     additional_info= {"token": AccountHelper.create_access_token(new_principal,
+                                                                                                  expiry= timedelta(minutes=60),
+                                                                                                  refresh = False),
 
                                                        "personal_key": saved_account_model.personal_identifier})
 
@@ -167,7 +167,7 @@ class AccountManager(object):
         if account_model is None:
             raise LoginError("Failed to find account with given name")
 
-        return AccountUtils.verify_pwd_hash(pwd_plain, account_model.salt, account_model.pwd_hash)
+        return AccountHelper.verify_pwd_hash(pwd_plain, account_model.salt, account_model.pwd_hash)
 
     @classmethod
     async def _core_verify_email(cls, email: str, activation_key: int, pi: str, session: AsyncSession) -> bool:
@@ -195,11 +195,11 @@ class AccountManager(object):
 
 
     async def verify_email_by_link(self, token: str, session: AsyncSession) -> EmailConfirmationResponse:
-        token_data: dict = AccountUtils.decode_url_safe_token(token)
+        token_data: dict = AccountHelper.decode_url_safe_token(token)
 
         signature = token_data.pop("signature")
 
-        if not AccountUtils.verify_signature(token_data,signature):
+        if not AccountHelper.verify_signature(token_data, signature):
             raise SignupAccountError("Failed to verify email")
         confirmed = await self._core_verify_email(email=token_data["email"],
                                                   activation_key=token_data["activation_key"],
@@ -209,8 +209,8 @@ class AccountManager(object):
             resp_msg="Email confirmed." if confirmed else "Email not confirmed.",
         )
 
-    def create_personal_information(self, req: CreatePersonalInformationRequest, session: AsyncSession)\
-            -> CreatePersonalInformationResponse:
+    def create_personal_information(self, req: CreatePrivateInformationRequest, session: AsyncSession)\
+            -> CreatePrivateInformationResponse:
         pass
 
 

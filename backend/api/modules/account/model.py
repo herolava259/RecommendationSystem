@@ -10,7 +10,7 @@ import json
 from datetime import datetime, timedelta
 from uuid import UUID
 from typing import Dict
-from modules.account.utils import AccountUtils
+from modules.account.utils import AccountHelper
 
 
 
@@ -39,7 +39,7 @@ class AccountModel(BaseModel):
     active: bool = Field(default=False)
     salt: str = Field(max_length=64)
     pwd_hash: str = Field(max_length=1024)
-    personal_identifier: str = Field(max_length=256, default=partial(AccountUtils.create_random_token, length=256))
+    personal_identifier: str = Field(max_length=256, default=partial(AccountHelper.create_random_token, length=256))
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
     email_verified: bool=Field(default=False)
@@ -60,9 +60,9 @@ class EmailVerificationModel(BaseModel):
     @classmethod
     def create_new(cls, account_model: AccountModel) -> "EmailVerificationModel":
         return EmailVerificationModel(account_id=account_model.id,
-                                     activation_key = AccountUtils.random_number(8),
-                                     expire_date = datetime.now() + timedelta(weeks=2),
-                                    is_verified= False)
+                                      activation_key = AccountHelper.random_number(8),
+                                      expire_date = datetime.now() + timedelta(weeks=2),
+                                      is_verified= False)
 
 class AccountClaimModel(BaseModel):
     id: UUID = Field(default_factory=uuid.uuid4)

@@ -24,7 +24,7 @@ from modules.account.error import (
 from .model import AccountModel, AccountClaimPrincipalModel
 
 from .service import SigninManager
-from .utils import AccountUtils
+from .utils import AccountHelper
 
 signin_manager = SigninManager()
 
@@ -36,14 +36,14 @@ class TokenBearer(HTTPBearer):
     async def __call__(self, request: Request) -> HTTPAuthorizationCredentials | None | dict:
 
         def _token_valid(enc_token: str):
-            token_info = AccountUtils.decode_token(enc_token)
+            token_info = AccountHelper.decode_token(enc_token)
 
             return token_info is not None
         creds = await super().__call__(request)
 
         token = creds.credentials
 
-        token_data = AccountUtils.decode_token(token)
+        token_data = AccountHelper.decode_token(token)
 
         if not _token_valid(token):
             raise InvalidTokenError()
@@ -57,7 +57,7 @@ class TokenBearer(HTTPBearer):
 
     @staticmethod
     def token_valid(token: str) -> bool:
-        token_data = AccountUtils.decode_token(token)
+        token_data = AccountHelper.decode_token(token)
 
         return token_data is not None
 

@@ -36,7 +36,7 @@ serializer = URLSafeTimedSerializer(
 )
 
 
-class AccountUtils:
+class AccountHelper:
 
     @staticmethod
     def generate_random_string():
@@ -94,14 +94,14 @@ class AccountUtils:
     @staticmethod
     def generate_pwd_hash(password, salt: str) -> str:
 
-        pwd_salt = AccountUtils.password_salt_format(password, salt)
+        pwd_salt = AccountHelper.password_salt_format(password, salt)
         hsh = passwd_context.hash(pwd_salt)
 
         return hsh
 
     @staticmethod
     def verify_pwd_hash(pwd: str, salt: str, hsh: str) -> bool:
-        pwd_salt = AccountUtils.password_salt_format(pwd, salt)
+        pwd_salt = AccountHelper.password_salt_format(pwd, salt)
 
         return passwd_context.verify(pwd_salt, hsh)
 
@@ -179,7 +179,7 @@ class AccountUtils:
     @staticmethod
     def verify_signature(data: dict, signature: str) -> bool:
 
-        real_signature = AccountUtils.create_signature(data)
+        real_signature = AccountHelper.create_signature(data)
 
         return hmac.compare_digest(real_signature, signature)
 
@@ -193,15 +193,10 @@ class AccountUtils:
     @staticmethod
     def gen_email_verification_link(**kwargs) -> str:
 
-        signature = AccountUtils.create_signature(kwargs)
+        signature = AccountHelper.create_signature(kwargs)
 
         kwargs["signature"] = signature
 
-        token = AccountUtils.encode_url_save_token(kwargs)
+        token = AccountHelper.encode_url_save_token(kwargs)
 
         return f"{Config.DOMAIN}/{Config.VERIFIER_URL}/account/email-verification?token={token}"
-
-if __name__ == "__main__":
-    print("Module: ", jwt)
-    print("DIR", dir(jwt))
-    print("FILE:",getattr(jwt,"__file__",None))
