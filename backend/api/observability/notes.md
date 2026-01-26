@@ -76,3 +76,7 @@ flowchart LR
     B --> K
     
 ```
+
+## domain for tracing
+
+- jaeger-ui: `http://localhost:16686`

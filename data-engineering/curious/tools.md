@@ -41,7 +41,7 @@
 - Spark: batch/stream
 - Flink: (streaming)
 
-### 6. Orchestrate
+### 6. Orchestration
 - Airflow
 - Dagster ??? 
 

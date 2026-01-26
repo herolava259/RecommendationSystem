@@ -85,6 +85,23 @@ services:
     ports:
       - "4317:4317" # OTLP gRPC receiver
 
+    networks:
+      - observability
+
+  cassandra:
+    image: cassandra:latest
+    container_name: cassandra-db
+    ports:
+      - "9042:9042"
+    environment:
+      - CASSANDRA_USER=${CASSANDRA_USER}
+      - CASSANDRA_PASSWORD=${CASSANDRA_PWD}
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+    networks:
+      - observability
+
+
 
 
 networks:
@@ -93,6 +110,10 @@ networks:
 
 volumes:
   grafana-data:
+    driver: local
+    external: false
+
+  cassandra-data:
     driver: local
     external: false
 

@@ -1,6 +1,8 @@
 import uuid
 from datetime import timedelta
+from typing import Annotated
 
+from fastapi import Depends
 from sqlmodel.ext.asyncio.session import AsyncSession
 from starlette.templating import Jinja2Templates
 
@@ -10,7 +12,7 @@ from modules.account.domain import AccountDataAccess
 from modules.account.model import (AccountModel,AccountClaimPrincipalModel,EmailVerificationModel,)
 
 from infrastructures.task_workers.celery.tasks import send_email
-
+from infrastructures.persistence.postgresql.db import get_session
 import logging
 
 logger = logging.getLogger(__name__)
@@ -40,6 +42,9 @@ from modules.account.utils import AccountHelper
 
 
 class SigninManager(object):
+
+    def __init__(self, session: Annotated[AsyncSession, Depends(get_session)]):
+        self.session = session
 
     async def login(self, req: LoginRequest, session: AsyncSession) -> LoginResponse:
         account_model: AccountModel | None = await AccountDataAccess.get_account_by_name(req.signin_name, session)
@@ -223,9 +228,6 @@ class AccountManager(object):
 
     def confirm_change_password(self, req: ConfirmChangePasswordRequest) -> ConfirmChangePasswordResponse:
         pass
-
-    
-
 
 class AccountAuthorizationManager(object):
 

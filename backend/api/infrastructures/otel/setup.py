@@ -56,8 +56,6 @@ def setting_jaeger(app: ASGIApp, mode: Literal["otlp-grpc", "otlp-http"] = "otlp
                 OTLPSpanExporterHTTP(endpoint=Config.JAEGER_HTTP_ADDR)
             )
         )
-    else:
-        raise ValueError("Agrument 'mode' is not supported.")
 
     if log_correlation:
         LoggingInstrumentor().instrument(set_logging_format=True)

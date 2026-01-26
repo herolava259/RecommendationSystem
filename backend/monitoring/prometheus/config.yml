@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 30s
+
+scrape_configs:
+  - job_name: 'otel-collector'
+    static_configs:
+      - targets: ['localhost:8889']
+    scrape_interval: 15s
+    metric_path: /metrics
+remote_write:
+  - url: "metric-collectors/api/v1/write"
+    basic_auth:
+      username: "prometheus"
+      password: "password"
+    write_relabel_configs:
+      - source_labels: [__name__]
+        regex: ".*test.*"
+        action: drop

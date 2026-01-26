@@ -1,0 +1,126 @@
+
+
+services:
+  
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel/config.yml"]
+    volumes:
+      - ./otel-collector/config.yml:/etc/otel/config.yml
+      - /var/log/containers:/var/log/containers
+    restart:
+      unless-stopped
+    depends_on:
+      - loki-log-sink
+      - prometheus
+      - jaeger-tracing
+    networks:
+      - observability
+  
+  loki-log-sink:
+    container_name: loki-log-sink
+    image: grafana/loki:2.9.0
+    ports:
+      - "3100:3100"
+    command:
+      - "--config.file=/etc/loki/local-config.yaml"
+    volumes:
+      - ./loki/config.yaml:/etc/loki/local-config.yaml
+    restart:
+      always
+    networks:
+      - observability
+  
+  grafana:
+    container_name: grafana-viz
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - loki-log-sink
+      - jager-tracing
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - observability
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=GF_AD_PWD
+    volumes:
+      - grafana-data:/var/lib/grafana
+  
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus/config.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    restart:
+      on-failure
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    networks:
+      - observability
+  jaeger-tracing:
+    image: jaegertracing/all-in-one
+    container_name: jaeger-tracing
+    restart: unless-stopped
+    volumes:
+      - "./jaeger/ui.json:/etc/jaeger/jaerger-ui.json"
+      - "./jaeger/config-spm.yaml:/etc/jaeger/config.yml"
+    command: ["--config", "/etc/jaeger/config.yml"]
+    environment:
+      - SPAN_STORAGE_TYPE=elasticsearch
+      - ES_SERVER_URLS=http://opensearch:9200
+    ports:
+      - "16686:16686" # ui
+      - "8888:8888" 
+      - "8889:8889"
+      # - "4317:4317" # otlp gRPC
+      # - "4318:4318" # otlp http
+    networks:
+      observability:
+        aliases: [spm_metrics_source]
+  opensearch:
+    image: opensearchproject/opensearch:2.13.0
+    container_name: opensearch
+    environment:
+      - discovery.type=single-node
+      - cluster.name=opensearch-cluster
+      - node.name=opensearch-cluster
+      - bootstrap.memory_lock=true
+      - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPENSEARCH_PWD:-admin}
+      - plugins.security.disabled=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - open-search-data:/usr/share/opensearch/data
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    depends_on:
+      - jaeger-tracing
+    restart: unless-stopped
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.13.0
+    container_name: opensearch-dashboards
+    environment:
+      - OPENSEARCH_HOSTS=["http://opensearch:9200"]
+      - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
+    ports:
+      - "5601:5601"
+    depends_on:
+      - opensearch
+
+networks:
+  observability:
+    driver: bridge
+
+volumes:
+  grafana-data:
+    driver: bridge
+  open-search-data:

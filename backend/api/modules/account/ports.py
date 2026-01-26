@@ -1,5 +1,5 @@
 
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -107,7 +107,15 @@ class LogoutResponse(BaseModel):
 
 
 class CreatePrivateInformationRequest(BaseModel):
-    pass
+    account_id: UUID = Field(default=uuid4)
+    phone: str = Field(max_length=64)
+    special_name: str = Field(max_length=512)
+    address: str = Field(max_length=1024)
+    post_code: str = Field(max_length=64)
+    user_name: str = Field(max_length=64)
+    preference: str = Field(max_length=1024)
+
+    secret_qas: Dict[str, str] = Field(default_factory=dict)
 
 class CreatePrivateInformationResponse(BaseModel):
     pass

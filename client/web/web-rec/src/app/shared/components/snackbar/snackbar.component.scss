@@ -1,0 +1,15 @@
+
+
+@layer components {
+    .custom-snackbar {
+        @apply flex items-center w-full max-w-sm p-4 text-body bg-neutral-primary-soft rounded-base shadow-xs border border-default
+    }
+
+    .snackbar-message {
+        @apply ms-3 text-sm font-normal
+    }
+
+    .snackbar-close-btn {
+        @apply ms-auto flex items-center justify-center text-body hover:text-heading bg-transparent box-border border border-transparent hover:bg-neutral-secondary-medium focus:ring-4 focus:ring-neutral-tertiary font-medium leading-5 rounded text-sm h-8 w-8 focus:outline-none
+    }
+}

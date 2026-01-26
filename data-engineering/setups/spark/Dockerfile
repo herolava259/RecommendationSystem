@@ -1,6 +1,6 @@
 FROM python:3.11-bullseye
 RUN apt-get update
-RUN apt-get install -y --no-install-recomends openjdk-17-jdk
+RUN apt-get install -y --no-install-recommends openjdk-17-jdk
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 ENV SPARK_HOME="/opt/spark"
 ENV JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
@@ -25,7 +25,7 @@ COPY ./spark.defaults.conf "${SPARK_HOME}/conf"
 
 # install sbt coursier (cs) to build jars
 # explain: chmod +x cs: grat cs permission that is execute
-RUN cirl -fL https://github.com/coursier/coursier/releases/latest/download/cs-x86_64-pc-linux.gz | gzip -d > cs && chmod +x cs
+RUN curl -fL https://github.com/coursier/coursier/releases/latest/download/cs-x86_64-pc-linux.gz | gzip -d > cs && chmod +x cs
 ENV PATH="$PATH:/root/.local/share/coursier/bin"
 RUN ./cs setup
 

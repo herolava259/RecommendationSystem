@@ -1,0 +1,162 @@
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: rec-api:4317
+      http:
+        endpoint: rec-api:4318
+  filelog:
+    include: 
+      - /var/log/containers/*.log
+    start_at: end
+  
+  operators:
+    # Docker JSON logs
+    - type: json_parser
+      parse_from: body
+      timestamp:
+        parse_from: attributes.time
+        layout: RFC3339Nano
+
+processors:
+  resource:
+    attributes:
+      - key: service.name
+        value: rec-fastapi
+        action: insert
+  
+  attributes:
+    actions:
+      - key: level
+        from_attribute: attributes.level
+        action: insert
+  
+  batch/log:
+    timeout: 5s
+    send_batch_size: 1024
+
+  memory_limiter:
+    limit_mib: 512
+  batch-tracing:
+
+  batch/metric:
+    timeout: 1s
+    send_batch_size: 1024
+  # filter noisy or high-cardinality metrics at the source
+  filter/metric:
+    metrics:
+      exclude:
+        match_type: regexp
+        metric_names:
+          - ".*_bucket"
+        resource_attributes:
+          - key: "service.instance.id"
+            value: ".*test.*"
+  filter/1:
+    metrics:
+      include:
+        match_type: expr
+        expressions:
+        - MetricName == "request_counts_total" && HasLabel("path") == true
+      exclude:
+        match_type: strict
+        metric_names:
+          - hello_world
+          - hello/world
+  filter/2:
+    metrics:
+      include:
+        match_type: expr
+        expressions:
+        - MetricName == "request_counts_total" && HasLabel("path") == false
+      exclude:
+        match_type: regexp
+        metric_names:
+          - prefix/.*
+          - prefix/.*
+  filter/3:
+    metrics:
+      exclude:
+        match_type: expr
+        expressions:
+        - MetricName == "my.metric" && Label("my_label") == "abc123"
+        - MetricType == "Histogram"
+
+  
+  # enrich metrics with consistent resource-level labels
+  resource/metric:
+    attributes:
+      - key: deployment.environment
+        value: production
+        action: upsert
+      - key: service.version
+        from_attribute: app.version
+        action: upsert
+  # optimize costs
+  probabilistic_sampler:
+    sampling_percentage: 10
+  
+exporters:
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
+    labels:
+      attributes:
+        service.name: service
+        level: level
+  otlp/jaeger:
+    endpoint: jaeger-tracing:4317
+    namespace: "otel"
+    tls:
+      insecure: true
+  
+  prometheus:
+    endpoint: prometheus:8889
+    namespace: "otel"
+    const_labels:
+      environment: "production"
+  # export metrics to remote backends
+  prometheusremotewrite:
+    endpoint: "metric-collectors/api/v1/write"
+    auth:
+      authenticator: basicauth/remote
+    resource_to_telemetry_conversion:
+      enabled: true
+    remote_write_queue:
+      capacity: 10000
+      max_samples_per_send: 500
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s 
+      max_elapsed_time: 5m
+    
+  opensearch:
+    endpoint: "opensearch:9200"
+    logs_index: "otel-logs-%Y.%m.%d"
+    timeout: 10s
+  
+
+
+service:
+  pipelines:
+    tracings:
+      receivers: [otlp]
+      processors: [memory_limiter, batch/tracing]
+      exporters: [otlp/jaeger]
+    logs:
+      receivers: [filelog]
+      processors: [resource, attributes, batch/log]
+      exporters: [loki, opensearch]
+    
+    metrics: 
+      receivers: [otlp]
+      processors: [memory_limiter, batch/metric]
+      exporters: [prometheus, prometheusremotewrite]
+
+
+extensions:
+  basicauth/remote:
+    client_auth:
+      username: "${REMOTE_WRITE_USERNAME}"
+      password: "${REMOTE_WRITE_PASSWORD}"

@@ -1,6 +1,4 @@
 import os
-
-from pydantic import NaiveDatetime
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 

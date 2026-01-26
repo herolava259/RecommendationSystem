@@ -14,7 +14,7 @@ from modules.account.model import AccountModel, AccountPrivateInformationModel
 from typing import List, Dict, Set, Type, Union, Optional, Any, Sequence, Tuple, TypeVar
 from sqlmodel import select, exists, update, delete
 import logging
-from sqlalchemy.orm import contains_eager,joinedload
+from sqlalchemy.orm import contains_eager, joinedload
 import json
 
 
@@ -516,7 +516,7 @@ class AccountDomainTable(object):
     def _record_to_dto(self,dto_type: Type[TDTOModel],
                        record: TSQLModel) \
             -> TDTOModel | None:
-        field_data = record.model_dump()
+        field_data = record.model_fields()
 
         return dto_type(**field_data)
 
