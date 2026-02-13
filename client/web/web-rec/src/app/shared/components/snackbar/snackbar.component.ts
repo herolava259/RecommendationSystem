@@ -12,10 +12,12 @@ import { LucideAngularModule} from 'lucide-angular';
 })
 export class SnackbarComponent implements OnInit {
 
+  // eslint-disable-next-line @typescript-eslint/no-inferrable-types
   public iconPath: string = 'M5 11.917 9.724 16.5 19 7.5';
   ngOnInit(): void {
     this.iconPath = this.makeIcon();
   }
+  // eslint-disable-next-line @typescript-eslint/no-inferrable-types
   @Input() message: string = '';
 
   @Input() type: 'success' | 'error' | 'info' | "warning" = 'info';

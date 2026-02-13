@@ -1,4 +1,3 @@
-
 from typing import Optional, List, Dict
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -37,7 +36,6 @@ class CreateAccountResponse(BaseModel):
     need_verify_email: bool = Field(default=False)
     additional_info: dict = Field(default_factory=dict)
     account_id: UUID | None = Field(default=None)
-
 
 
 class LoginRequest(BaseModel):
@@ -108,17 +106,17 @@ class LogoutResponse(BaseModel):
 
 class CreatePrivateInformationRequest(BaseModel):
     account_id: UUID = Field(default=uuid4)
-    phone: str = Field(max_length=64)
+    phone: str = Field(max_length=11)
     special_name: str = Field(max_length=512)
     address: str = Field(max_length=1024)
     post_code: str = Field(max_length=64)
     user_name: str = Field(max_length=64)
     preference: str = Field(max_length=1024)
-
     secret_qas: Dict[str, str] = Field(default_factory=dict)
 
 class CreatePrivateInformationResponse(BaseModel):
-    pass
+    succeed: bool = Field(default = False)
+    resp_msg: Optional[str] = Field(default=None)
 
 class ChangePersonalAccountInformationRequest(BaseModel):
     new_address: str = Field(max_length=1024)
@@ -166,6 +164,10 @@ class ForgetPasswordResponse(BaseModel):
 
 
 # Step 2
+class QuestionAnswerPlainPair(BaseModel):
+    question: str = Field(...)
+    answer: str = Field(...)
 
-class AnswerChallengeQuestionsRequest(BaseModel):
-    session_id: str = Field()
+class AnswerForChallengeQuestionsRequest(BaseModel):
+    session_id: str = Field(...)
+    qas: List[QuestionAnswerPlainPair] = Field(default_factory=list)

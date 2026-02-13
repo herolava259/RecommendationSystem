@@ -1,6 +1,6 @@
 # Need:
-- desgin outter layout : devide and align the following components 
-    - sidebar reside right (minimizeable)
+- desgin outter layout : divide and align the following components 
+    - sidebar reside right (minimizable)
     - dashboard/content: in center
     - header/ in top of web-site 
 - Use case: 
@@ -17,4 +17,4 @@
 - data management/ external data / data interaction
     + ngrx/store
     + ngrx/effects
-    + 
+    + ngrx/entity

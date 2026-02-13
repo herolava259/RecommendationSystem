@@ -1,51 +1,40 @@
 import { createFeature, createReducer, on } from '@ngrx/store';
-import { EntityState, EntityAdapter, createEntityAdapter } from '@ngrx/entity';
-import { Account } from './account.model';
 import { AccountActions }  from './account.actions';
+import { accountAdapter, initialAccountState } from './account.entity';
 
 export const accountsFeatureKey = 'accounts';
 
-export interface State extends EntityState<Account> {
-  // additional entities state properties
-}
-
-export const adapter: EntityAdapter<Account> = createEntityAdapter<Account>();
-
-export const initialState: State = adapter.getInitialState({
-  // additional entity state properties
-});
-
 export const reducer = createReducer(
-  initialState,
+  initialAccountState,
   on(AccountActions.addAccount,
-    (state, action) => adapter.addOne(action.account, state)
+    (state, action) => accountAdapter.addOne(action.account, state)
   ),
   on(AccountActions.upsertAccount,
-    (state, action) => adapter.upsertOne(action.account, state)
+    (state, action) => accountAdapter.upsertOne(action.account, state)
   ),
   on(AccountActions.addAccounts,
-    (state, action) => adapter.addMany(action.accounts, state)
+    (state, action) => accountAdapter.addMany(action.accounts, state)
   ),
   on(AccountActions.upsertAccounts,
-    (state, action) => adapter.upsertMany(action.accounts, state)
+    (state, action) => accountAdapter.upsertMany(action.accounts, state)
   ),
   on(AccountActions.updateAccount,
-    (state, action) => adapter.updateOne(action.account, state)
+    (state, action) => accountAdapter.updateOne(action.account, state)
   ),
   on(AccountActions.updateAccounts,
-    (state, action) => adapter.updateMany(action.accounts, state)
+    (state, action) => accountAdapter.updateMany(action.accounts, state)
   ),
   on(AccountActions.deleteAccount,
-    (state, action) => adapter.removeOne(action.id, state)
+    (state, action) => accountAdapter.removeOne(action.id, state)
   ),
   on(AccountActions.deleteAccounts,
-    (state, action) => adapter.removeMany(action.ids, state)
+    (state, action) => accountAdapter.removeMany(action.ids, state)
   ),
   on(AccountActions.loadAccounts,
-    (state, action) => adapter.setAll(action.accounts, state)
+    (state, action) => accountAdapter.setAll(action.accounts, state)
   ),
   on(AccountActions.clearAccounts,
-    state => adapter.removeAll(state)
+    state => accountAdapter.removeAll(state)
   ),
 );
 
@@ -53,7 +42,7 @@ export const accountsFeature = createFeature({
   name: accountsFeatureKey,
   reducer,
   extraSelectors: ({ selectAccountsState }) => ({
-    ...adapter.getSelectors(selectAccountsState)
+    ...accountAdapter.getSelectors(selectAccountsState)
   }),
 });
 

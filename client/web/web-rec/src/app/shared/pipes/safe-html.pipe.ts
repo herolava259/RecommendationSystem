@@ -6,6 +6,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 })
 export class SafeHtmlPipe implements PipeTransform {
 
+  // eslint-disable-next-line @angular-eslint/prefer-inject
   constructor(private sanitizer: DomSanitizer) {}
 
   transform(value:string): SafeHtml {
