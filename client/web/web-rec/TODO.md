@@ -18,3 +18,10 @@
     + ngrx/store
     + ngrx/effects
     + ngrx/entity
+
+## Utilities 
+
+### Steppers
+- Include:
+  + Stepper Group do: play as orchestrator. control to which the stepper currently display 
+  + Stepper Item do: wrapper of core component which each component is a step of the business use case

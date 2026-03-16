@@ -1,9 +1,9 @@
 import { Directive } from '@angular/core';
 
 @Directive({
-  selector: '[appCurrentStep]'
+  selector: '[appStepNavigation]'
 })
-export class CurrentStepDirective {
+export class StepNavigationDirective {
 
   constructor() { }
 

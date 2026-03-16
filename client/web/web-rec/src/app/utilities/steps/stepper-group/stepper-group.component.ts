@@ -12,11 +12,14 @@ export class StepperGroupComponent implements OnInit, AfterContentInit {
   @Input() tabAcvtiveIndex = 0;
 
   @Output() tabActiveChange = new EventEmitter();
-  
+
+  @ContentChildren(StepperTabComponent)
+  stepList: QueryList<StepperTabComponent> = new QueryList<StepperTabComponent>();
+
 
   ngAfterContentInit(): void {
-    this.tabPanelList.changes.subscribe(() => {
-      if(this.tabPanelList.length <= this.tabAcvtiveIndex){
+    this.stepList.changes.subscribe(() => {
+      if(this.stepList.length <= this.tabAcvtiveIndex){
         this.selectItem(0);
       }
     })
@@ -32,8 +35,10 @@ export class StepperGroupComponent implements OnInit, AfterContentInit {
     throw new Error('Method not implemented.');
   }
 
-  @ContentChildren(StepperTabComponent)
-  tabPanelList: QueryList<StepperTabComponent> = new QueryList<StepperTabComponent>();
+  onNextStep(): void{
+    console.log('next step');
+
+  }
 
 
 

@@ -7,5 +7,5 @@ import { Component } from '@angular/core';
   styleUrl: './stepper-tab.component.scss'
 })
 export class StepperTabComponent {
-
+  
 }
