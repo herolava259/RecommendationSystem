@@ -10,7 +10,4 @@ export class AccountSsoService {
   // eslint-disable-next-line @angular-eslint/prefer-inject, @typescript-eslint/no-empty-function
   constructor(httpClient: HttpClient) { }
 
-  
-
-
 }

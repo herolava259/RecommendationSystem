@@ -9,7 +9,6 @@ from itsdangerous import URLSafeTimedSerializer
 import jwt
 from passlib.context import CryptContext
 
-from config import Config
 from typing import Any,Dict,Sequence
 
 from cryptography.fernet import Fernet, MultiFernet
