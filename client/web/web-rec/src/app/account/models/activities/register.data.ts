@@ -8,11 +8,21 @@ export interface CreateAccountFormContent {
 };
 
 // Step 1: Create Account Request and Response
-export interface CreateAccountRequest {
+export interface CreateAccountInformationRequest {
     email: string;
     phone: string;
     signinName: string;
     password: string;
+}
+
+export function createAccountInformationRequestFromFormContent(formContent: CreateAccountFormContent): CreateAccountInformationRequest
+{
+  return {
+    email: formContent.email.value,
+    phone: formContent.phone.value,
+    signinName: formContent.email.value, // Assuming signinName is the same as email
+    password: formContent.password.value
+  }
 }
 
 export interface CreateAccountResponse  {

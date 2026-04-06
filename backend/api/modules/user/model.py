@@ -1,13 +1,40 @@
+import enum
 import uuid
 from datetime import datetime
 from typing import List, Dict, Optional
-
+from abc import ABC, abstractmethod
 
 from pydantic import BaseModel, Field, Field, field_validator, model_validator
 
 from pydantic_core.core_schema import FieldValidationInfo
 
 # TODO: add field validation for requests
+
+class PermissionBaseModel(BaseModel, ABC):
+    id: uuid.UUID
+    creator_id: uuid.UUID
+    name: str
+    created_at: datetime
+    updated_at: datetime
+
+class ActionType(enum.Enum, int):
+    READ = 0
+    WRITE = 1
+    REMOVE = 2
+    OWNER = 3
+
+class PermissionAtomicModel(PermissionBaseModel):
+    actions: List[ActionType]
+
+
+class BaseDataAuthorizationData(BaseModel, ABC):
+
+    @abstractmethod
+    @property
+    def owner_id(self) -> uuid.UUID:
+        pass
+
+
 
 
 class CreateUserSessionRequest(BaseModel):
@@ -87,7 +114,7 @@ class UpdateUserRequest(BaseModel):
     gender: Optional[str] = Field(...)
 
     age: Optional[int] = Field(...)
-    date_of_birth: Optional[datetime] = Field(...)
+    dob: Optional[datetime] = Field(...)
     additional_info: Optional[Dict[str, str]] = Field(...)
 
     country: Optional[str] = Field(...)
